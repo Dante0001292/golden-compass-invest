@@ -318,13 +318,13 @@ function Index() {
               Join 1.2M investors trading the world's most iconic companies on Aurea.
             </p>
             <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
-              <button className="inline-flex items-center justify-center gap-2 rounded-full bg-gradient-gold px-7 py-4 text-base font-medium text-primary-foreground shadow-gold transition hover:scale-[1.02]">
-                Download for iOS
+              <a href="/signup" className="inline-flex items-center justify-center gap-2 rounded-full bg-gradient-gold px-7 py-4 text-base font-medium text-primary-foreground shadow-gold transition hover:scale-[1.02]">
+                Sign up
                 <ArrowRight className="size-4" />
-              </button>
-              <button className="inline-flex items-center justify-center gap-2 rounded-full glass px-7 py-4 text-base font-medium text-foreground hover:border-gold/40">
-                Download for Android
-              </button>
+              </a>
+              <a href="/login" className="inline-flex items-center justify-center gap-2 rounded-full glass px-7 py-4 text-base font-medium text-foreground hover:border-gold/40">
+                Sign in
+              </a>
             </div>
             <p className="mt-6 text-[11px] text-muted-foreground">
               Investing involves risk. Past performance is no guarantee of future results.
