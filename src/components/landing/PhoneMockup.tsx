@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { StockChart } from "./StockChart";
 import { ArrowUpRight, Bell, Home, PieChart, Search, User } from "lucide-react";
 
