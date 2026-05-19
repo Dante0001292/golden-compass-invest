@@ -109,13 +109,13 @@ function Index() {
                 A cinematic, beginner-friendly way to own Apple, Tesla, Sony, Toyota and Nvidia — from a single, beautifully crafted app.
               </p>
               <div className="mt-8 flex flex-col items-stretch justify-center gap-3 sm:flex-row md:justify-start">
-                <button className="group inline-flex items-center justify-center gap-2 rounded-full bg-gradient-gold px-6 py-4 text-base font-medium text-primary-foreground shadow-gold transition hover:scale-[1.02]">
-                  Open your account
+                <a href="/signup" className="group inline-flex items-center justify-center gap-2 rounded-full bg-gradient-gold px-6 py-4 text-base font-medium text-primary-foreground shadow-gold transition hover:scale-[1.02]">
+                  Sign up
                   <ArrowRight className="size-4 transition group-hover:translate-x-0.5" />
-                </button>
-                <button className="inline-flex items-center justify-center gap-2 rounded-full glass px-6 py-4 text-base font-medium text-foreground hover:border-gold/40">
-                  Watch the film
-                </button>
+                </a>
+                <a href="/login" className="inline-flex items-center justify-center gap-2 rounded-full glass px-6 py-4 text-base font-medium text-foreground hover:border-gold/40">
+                  Sign in
+                </a>
               </div>
               <div className="mt-8 flex items-center justify-center gap-6 text-xs text-muted-foreground md:justify-start">
                 <div>
