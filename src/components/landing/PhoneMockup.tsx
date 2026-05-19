@@ -13,6 +13,24 @@ const holdings = [
 const chartData = [22, 24, 21, 26, 28, 25, 30, 29, 33, 32, 36, 38, 35, 42, 44, 46, 43, 48, 52, 50, 56, 60];
 
 export function PhoneMockup() {
+  const [balance, setBalance] = useState(48392.5);
+  const [delta, setDelta] = useState(1284.2);
+
+  useEffect(() => {
+    const id = setInterval(() => {
+      // Always increase: small random positive tick
+      const tick = Math.random() * 12 + 1.5;
+      setBalance((b) => b + tick);
+      setDelta((d) => d + tick);
+    }, 1200);
+    return () => clearInterval(id);
+  }, []);
+
+  const fmt = (n: number) =>
+    n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const [whole, cents] = fmt(balance).split(".");
+  const pct = ((delta / (balance - delta)) * 100).toFixed(2);
+
   return (
     <div className="relative mx-auto w-[280px] sm:w-[320px] animate-float [transform-style:preserve-3d]">
       {/* glow behind */}
