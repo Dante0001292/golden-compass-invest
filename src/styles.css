@@ -35,8 +35,9 @@
   --color-gold-deep: var(--gold-deep);
   --color-success: var(--success);
   --color-loss: var(--loss);
-  --font-display: "Fraunces", ui-serif, Georgia, serif;
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Noto Serif JP", "Fraunces", ui-serif, Georgia, serif;
+  --font-sans: "Noto Sans JP", "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-jp: "Noto Sans JP", ui-sans-serif, system-ui, sans-serif;
 }
 
 :root {
