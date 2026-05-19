@@ -79,10 +79,10 @@ function Index() {
             <a href="#security" className="hover:text-foreground">Security</a>
           </nav>
           <div className="flex items-center gap-2">
-            <button className="hidden rounded-full border border-border px-4 py-2 text-sm text-foreground/80 hover:border-gold/50 hover:text-foreground sm:inline-flex">Sign in</button>
-            <button className="rounded-full bg-gradient-gold px-4 py-2 text-sm font-medium text-primary-foreground shadow-gold transition hover:scale-[1.02]">
-              Get the app
-            </button>
+            <a href="/login" className="hidden rounded-full border border-border px-4 py-2 text-sm text-foreground/80 hover:border-gold/50 hover:text-foreground sm:inline-flex">Sign in</a>
+            <a href="/signup" className="rounded-full bg-gradient-gold px-4 py-2 text-sm font-medium text-primary-foreground shadow-gold transition hover:scale-[1.02]">
+              Sign up
+            </a>
             <button className="grid size-10 place-items-center rounded-full glass md:hidden" aria-label="Menu">
               <Menu className="size-4" />
             </button>
@@ -109,13 +109,13 @@ function Index() {
                 A cinematic, beginner-friendly way to own Apple, Tesla, Sony, Toyota and Nvidia — from a single, beautifully crafted app.
               </p>
               <div className="mt-8 flex flex-col items-stretch justify-center gap-3 sm:flex-row md:justify-start">
-                <button className="group inline-flex items-center justify-center gap-2 rounded-full bg-gradient-gold px-6 py-4 text-base font-medium text-primary-foreground shadow-gold transition hover:scale-[1.02]">
-                  Open your account
+                <a href="/signup" className="group inline-flex items-center justify-center gap-2 rounded-full bg-gradient-gold px-6 py-4 text-base font-medium text-primary-foreground shadow-gold transition hover:scale-[1.02]">
+                  Sign up
                   <ArrowRight className="size-4 transition group-hover:translate-x-0.5" />
-                </button>
-                <button className="inline-flex items-center justify-center gap-2 rounded-full glass px-6 py-4 text-base font-medium text-foreground hover:border-gold/40">
-                  Watch the film
-                </button>
+                </a>
+                <a href="/login" className="inline-flex items-center justify-center gap-2 rounded-full glass px-6 py-4 text-base font-medium text-foreground hover:border-gold/40">
+                  Sign in
+                </a>
               </div>
               <div className="mt-8 flex items-center justify-center gap-6 text-xs text-muted-foreground md:justify-start">
                 <div>
@@ -318,13 +318,13 @@ function Index() {
               Join 1.2M investors trading the world's most iconic companies on Aurea.
             </p>
             <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
-              <button className="inline-flex items-center justify-center gap-2 rounded-full bg-gradient-gold px-7 py-4 text-base font-medium text-primary-foreground shadow-gold transition hover:scale-[1.02]">
-                Download for iOS
+              <a href="/signup" className="inline-flex items-center justify-center gap-2 rounded-full bg-gradient-gold px-7 py-4 text-base font-medium text-primary-foreground shadow-gold transition hover:scale-[1.02]">
+                Sign up
                 <ArrowRight className="size-4" />
-              </button>
-              <button className="inline-flex items-center justify-center gap-2 rounded-full glass px-7 py-4 text-base font-medium text-foreground hover:border-gold/40">
-                Download for Android
-              </button>
+              </a>
+              <a href="/login" className="inline-flex items-center justify-center gap-2 rounded-full glass px-7 py-4 text-base font-medium text-foreground hover:border-gold/40">
+                Sign in
+              </a>
             </div>
             <p className="mt-6 text-[11px] text-muted-foreground">
               Investing involves risk. Past performance is no guarantee of future results.

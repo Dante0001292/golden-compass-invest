@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { StockChart } from "./StockChart";
 import { ArrowUpRight, Bell, Home, PieChart, Search, User } from "lucide-react";
 
@@ -12,6 +13,24 @@ const holdings = [
 const chartData = [22, 24, 21, 26, 28, 25, 30, 29, 33, 32, 36, 38, 35, 42, 44, 46, 43, 48, 52, 50, 56, 60];
 
 export function PhoneMockup() {
+  const [balance, setBalance] = useState(48392.5);
+  const [delta, setDelta] = useState(1284.2);
+
+  useEffect(() => {
+    const id = setInterval(() => {
+      // Always increase: small random positive tick
+      const tick = Math.random() * 12 + 1.5;
+      setBalance((b) => b + tick);
+      setDelta((d) => d + tick);
+    }, 1200);
+    return () => clearInterval(id);
+  }, []);
+
+  const fmt = (n: number) =>
+    n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const [whole, cents] = fmt(balance).split(".");
+  const pct = ((delta / (balance - delta)) * 100).toFixed(2);
+
   return (
     <div className="relative mx-auto w-[280px] sm:w-[320px] animate-float [transform-style:preserve-3d]">
       {/* glow behind */}
@@ -35,9 +54,9 @@ export function PhoneMockup() {
               <div className="mt-4 flex items-center justify-between">
                 <div>
                   <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Portfolio</p>
-                  <p className="font-display text-2xl tracking-tight text-foreground">$48,392<span className="text-gold">.50</span></p>
-                  <p className="mt-0.5 flex items-center gap-1 text-[11px] text-[color:var(--success)]">
-                    <ArrowUpRight className="size-3" /> +$1,284.20 (2.72%) today
+                  <p className="font-display text-2xl tracking-tight text-foreground tabular-nums">${whole}<span className="text-gold">.{cents}</span></p>
+                  <p className="mt-0.5 flex items-center gap-1 text-[11px] text-[color:var(--success)] tabular-nums">
+                    <ArrowUpRight className="size-3" /> +${fmt(delta)} ({pct}%) today
                   </p>
                 </div>
                 <div className="flex flex-col items-end gap-2">
