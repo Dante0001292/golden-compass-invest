@@ -79,10 +79,10 @@ function Index() {
             <a href="#security" className="hover:text-foreground">Security</a>
           </nav>
           <div className="flex items-center gap-2">
-            <button className="hidden rounded-full border border-border px-4 py-2 text-sm text-foreground/80 hover:border-gold/50 hover:text-foreground sm:inline-flex">Sign in</button>
-            <button className="rounded-full bg-gradient-gold px-4 py-2 text-sm font-medium text-primary-foreground shadow-gold transition hover:scale-[1.02]">
-              Get the app
-            </button>
+            <a href="/login" className="hidden rounded-full border border-border px-4 py-2 text-sm text-foreground/80 hover:border-gold/50 hover:text-foreground sm:inline-flex">Sign in</a>
+            <a href="/signup" className="rounded-full bg-gradient-gold px-4 py-2 text-sm font-medium text-primary-foreground shadow-gold transition hover:scale-[1.02]">
+              Sign up
+            </a>
             <button className="grid size-10 place-items-center rounded-full glass md:hidden" aria-label="Menu">
               <Menu className="size-4" />
             </button>
