@@ -28,13 +28,14 @@ function LoginPage() {
       <Particles count={18} />
 
       {/* Background ghost chart */}
-      <div className="pointer-events-none absolute inset-x-0 top-1/3 opacity-20">
+      <div className="pointer-events-none absolute inset-x-0 top-1/3 opacity-[0.18]">
         <StockChart
-          data={[10, 14, 12, 18, 16, 22, 20, 26, 24, 30, 28, 34, 32, 40, 38, 44, 42, 50, 48, 56, 54, 62]}
+          data={[3420, 3458, 3432, 3474, 3448, 3492, 3464, 3440, 3476, 3514, 3488, 3526, 3500, 3540, 3512, 3554, 3528, 3570, 3544, 3588, 3560, 3604, 3578, 3622, 3596, 3568, 3612, 3650, 3624, 3665]}
           width={1400}
           height={280}
           className="w-full"
           color="var(--gold)"
+          animate={false}
         />
       </div>
 

@@ -1,27 +1,32 @@
 import { useEffect, useState } from "react";
 import { StockChart } from "./StockChart";
-import { ArrowUpRight, Bell, Home, PieChart, Search, User } from "lucide-react";
+import { ArrowUpRight, Home, PieChart, Search, User } from "lucide-react";
 
 const holdings = [
-  { sym: "TSLA", name: "テスラ", price: "248.42", change: "+3.74%", data: [10, 12, 11, 14, 13, 16, 18, 17, 20, 22], up: true },
-  { sym: "AAPL", name: "アップル", price: "192.31", change: "+2.18%", data: [14, 13, 15, 14, 16, 17, 18, 19, 20, 21], up: true },
-  { sym: "6758", name: "ソニー", price: "13,420", change: "+1.62%", data: [12, 13, 12, 14, 13, 14, 15, 16, 16, 17], up: true },
-  { sym: "7203", name: "トヨタ", price: "2,815", change: "-0.41%", data: [18, 17, 18, 16, 17, 15, 16, 14, 15, 14], up: false },
-  { sym: "NVDA", name: "エヌビディア", price: "892.10", change: "+5.23%", data: [8, 10, 11, 13, 12, 15, 17, 18, 20, 24], up: true },
+  { sym: "TSLA", name: "テスラ",       price: "248.42", change: "+3.74%", data: [225, 238, 227, 244, 235, 248, 236, 252, 240, 248], up: true  },
+  { sym: "AAPL", name: "アップル",     price: "192.31", change: "+2.18%", data: [182, 183, 181, 184, 182, 185, 183, 186, 184, 192], up: true  },
+  { sym: "6758", name: "ソニー",       price: "13,420", change: "+1.62%", data: [12700, 12750, 12725, 12780, 12800, 12840, 12820, 12870, 12850, 13420], up: true  },
+  { sym: "7203", name: "トヨタ",       price: "2,815",  change: "-0.41%", data: [2920, 2905, 2918, 2896, 2910, 2888, 2902, 2878, 2855, 2815], up: false },
+  { sym: "NVDA", name: "エヌビディア", price: "892.10", change: "+5.23%", data: [750, 790, 775, 815, 798, 840, 822, 858, 842, 892], up: true  },
 ];
 
-const chartData = [22, 24, 21, 26, 28, 25, 30, 29, 33, 32, 36, 38, 35, 42, 44, 46, 43, 48, 52, 50, 56, 60];
+// Realistic 22-point portfolio chart
+const chartData = [
+  3620, 3658, 3634, 3672, 3648, 3690, 3658, 3635, 3665, 3698,
+  3672, 3710, 3685, 3720, 3695, 3730, 3706, 3742, 3718, 3755,
+  3730, 3768,
+];
 
 export function PhoneMockup() {
-  const [balance, setBalance] = useState(3820000);
-  const [delta, setDelta] = useState(124800);
+  const [balance, setBalance] = useState(3_820_440);
+  const [delta, setDelta] = useState(124_800);
 
   useEffect(() => {
     const id = setInterval(() => {
-      const tick = Math.random() * 800 + 120;
-      setBalance((b) => b + tick);
-      setDelta((d) => d + tick);
-    }, 1200);
+      const tick = (Math.random() - 0.4) * 60;
+      setBalance((b) => Math.round(b + tick));
+      setDelta((d) => Math.round(d + Math.abs(tick) * 0.3));
+    }, 3500);
     return () => clearInterval(id);
   }, []);
 
@@ -43,29 +48,19 @@ export function PhoneMockup() {
                 <span className="flex gap-1 opacity-70">●●●●</span>
               </div>
 
-              <div className="mt-4 flex items-center justify-between">
-                <div>
-                  <p className="text-[10px] uppercase tracking-widest text-muted-foreground">総資産</p>
-                  <p className="font-display text-2xl tracking-tight text-foreground tabular-nums">¥{fmt(balance)}</p>
-                  <p className="mt-0.5 flex items-center gap-1 text-[11px] text-[color:var(--success)] tabular-nums">
-                    <ArrowUpRight className="size-3" /> +¥{fmt(delta)} ({pct}%) 本日
-                  </p>
-                </div>
-                <div className="flex flex-col items-end gap-2">
-                  <button className="size-8 rounded-full glass flex items-center justify-center">
-                    <Bell className="size-3.5 text-gold" />
-                  </button>
-                  <button className="size-8 rounded-full glass flex items-center justify-center">
-                    <Search className="size-3.5 text-muted-foreground" />
-                  </button>
-                </div>
+              <div className="mt-4">
+                <p className="text-[10px] uppercase tracking-widest text-muted-foreground">総資産</p>
+                <p className="font-display text-2xl tracking-tight text-foreground tabular-nums">¥{fmt(balance)}</p>
+                <p className="mt-0.5 flex items-center gap-1 text-[11px] text-[color:var(--success)] tabular-nums">
+                  <ArrowUpRight className="size-3" /> +¥{fmt(delta)} ({pct}%) 本日
+                </p>
               </div>
 
-              <div className="relative mt-4 h-28 rounded-2xl glass-gold p-3">
+              <div className="relative mt-4 overflow-hidden rounded-2xl glass-gold p-3">
                 <div className="flex items-center justify-between text-[9px] text-muted-foreground">
                   <span>1日</span><span>1週</span>
                   <span className="rounded-full bg-gold px-2 py-0.5 text-[9px] font-medium text-primary-foreground">1ヶ月</span>
-                  <span>3ヶ月</span><span>1年</span><span>全期間</span>
+                  <span>3ヶ月</span><span>1年</span>
                 </div>
                 <StockChart data={chartData} width={260} height={64} className="mt-1 h-16 w-full" />
               </div>
@@ -87,9 +82,14 @@ export function PhoneMockup() {
                           <p className="text-[9px] leading-tight text-muted-foreground">{h.name}</p>
                         </div>
                       </div>
-                      <StockChart data={h.data} width={50} height={18} className="h-4 w-12" color={h.up ? "var(--success)" : "var(--loss)"} fill={false} animate={false} />
+                      <StockChart
+                        data={h.data} width={50} height={18}
+                        className="h-4 w-12"
+                        color={h.up ? "var(--gold)" : "var(--loss)"}
+                        fill={false} animate={false}
+                      />
                       <div className="text-right">
-                        <p className="text-[10px] font-medium text-foreground">${h.price}</p>
+                        <p className="text-[10px] font-medium text-foreground">{h.price.includes(",") ? `¥${h.price}` : `$${h.price}`}</p>
                         <p className={`text-[9px] ${h.up ? "text-[color:var(--success)]" : "text-[color:var(--loss)]"}`}>{h.change}</p>
                       </div>
                     </div>
@@ -98,7 +98,7 @@ export function PhoneMockup() {
               </div>
             </div>
 
-            <div className="mt-2 flex items-center justify-around border-t border-white/5 bg-black/60 px-6 py-3 backdrop-blur">
+            <div className="flex items-center justify-around border-t border-white/5 bg-black/60 px-6 py-3 backdrop-blur">
               {[Home, PieChart, Search, User].map((Icon, i) => (
                 <Icon key={i} className={`size-4 ${i === 0 ? "text-gold" : "text-muted-foreground"}`} />
               ))}

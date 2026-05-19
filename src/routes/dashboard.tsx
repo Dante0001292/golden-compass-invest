@@ -1,6 +1,20 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { ArrowUpRight, Bell, Home, LineChart, LogOut, PieChart, Search, Settings, TrendingUp, User, Wallet } from "lucide-react";
+import {
+  ArrowDownRight,
+  ArrowUpRight,
+  Award,
+  ChevronRight,
+  Globe2,
+  Home,
+  LineChart,
+  LogOut,
+  PieChart,
+  Shield,
+  TrendingUp,
+  User,
+  Wallet,
+} from "lucide-react";
 import { Particles } from "@/components/landing/Particles";
 import { StockChart } from "@/components/landing/StockChart";
 import { Ticker } from "@/components/landing/Ticker";
@@ -15,39 +29,105 @@ export const Route = createFileRoute("/dashboard")({
   }),
 });
 
+// ─── Static data ─────────────────────────────────────────────────────
+// Normalized values that produce realistic-looking chart shapes
+
 const holdings = [
-  { sym: "AAPL", name: "Apple", jp: "アップル", price: "192.31", change: "+2.18%", data: [14, 13, 15, 14, 16, 17, 18, 19, 20, 21, 22, 23], up: true },
-  { sym: "TSLA", name: "Tesla", jp: "テスラ", price: "248.42", change: "+3.74%", data: [10, 12, 11, 14, 13, 16, 18, 17, 20, 22, 24, 26], up: true },
-  { sym: "6758", name: "Sony", jp: "ソニー", price: "¥13,420", change: "+1.62%", data: [12, 13, 12, 14, 13, 14, 15, 16, 16, 17, 18, 19], up: true },
-  { sym: "7203", name: "Toyota", jp: "トヨタ", price: "¥2,815", change: "+0.41%", data: [14, 15, 14, 16, 17, 16, 18, 17, 19, 20, 19, 21], up: true },
-  { sym: "NVDA", name: "Nvidia", jp: "エヌビディア", price: "892.10", change: "+5.23%", data: [8, 10, 11, 13, 12, 15, 17, 18, 20, 24, 27, 30], up: true },
+  {
+    sym: "AAPL", name: "Apple",     jp: "アップル",
+    price: "$192.31", shares: 15, change: "+2.18%", value: "¥432,800",
+    data: [182, 181, 184, 182, 179, 183, 185, 183, 187, 185, 189, 192],
+    up: true,
+  },
+  {
+    sym: "TSLA", name: "Tesla",     jp: "テスラ",
+    price: "$248.42", shares: 8,  change: "+3.74%", value: "¥298,600",
+    data: [225, 238, 227, 244, 235, 248, 236, 252, 240, 245, 238, 248],
+    up: true,
+  },
+  {
+    sym: "6758", name: "Sony",      jp: "ソニー",
+    price: "¥13,420", shares: 20, change: "+1.62%", value: "¥268,400",
+    data: [12700, 12750, 12725, 12780, 12755, 12810, 12790, 12840, 12820, 12870, 12850, 13420],
+    up: true,
+  },
+  {
+    sym: "7203", name: "Toyota",    jp: "トヨタ",
+    price: "¥2,815",  shares: 30, change: "-0.41%", value: "¥84,450",
+    data: [2920, 2905, 2918, 2896, 2910, 2888, 2902, 2878, 2895, 2858, 2875, 2815],
+    up: false,
+  },
+  {
+    sym: "NVDA", name: "Nvidia",    jp: "エヌビディア",
+    price: "$892.10", shares: 3,  change: "+5.23%", value: "¥402,300",
+    data: [750, 790, 775, 815, 798, 840, 822, 856, 840, 868, 852, 892],
+    up: true,
+  },
+  {
+    sym: "MSFT", name: "Microsoft", jp: "マイクロソフト",
+    price: "$415.32", shares: 5,  change: "-1.08%", value: "¥313,200",
+    data: [440, 436, 438, 432, 435, 429, 432, 425, 429, 421, 418, 415],
+    up: false,
+  },
 ];
 
 const indices = [
-  { name: "NASDAQ", val: "17,842.12", chg: "+1.24%", data: [20, 22, 21, 25, 24, 28, 27, 31, 30, 34], up: true },
-  { name: "日経平均", val: "39,128.50", chg: "+1.42%", data: [18, 19, 18, 22, 21, 24, 23, 27, 26, 30], up: true },
-  { name: "S&P 500", val: "5,624.18", chg: "+0.86%", data: [16, 17, 16, 19, 18, 21, 20, 23, 22, 25], up: true },
-  { name: "TOPIX", val: "2,793.42", chg: "+0.62%", data: [14, 15, 14, 17, 16, 18, 17, 20, 19, 22], up: true },
+  { name: "NASDAQ",  val: "17,842.12", chg: "+1.24%", data: [16800, 16950, 16820, 17050, 16940, 17180, 17060, 17320, 17200, 17420, 17310, 17560, 17440, 17620, 17842], up: true  },
+  { name: "日経平均", val: "38,451.20", chg: "-0.38%", data: [39200, 38950, 39100, 38750, 38920, 38600, 38780, 38450, 38620, 38451], up: false },
+  { name: "S&P 500", val: "5,624.18",  chg: "+0.86%", data: [5480, 5510, 5490, 5530, 5512, 5548, 5530, 5568, 5549, 5585, 5564, 5602, 5580, 5610, 5624], up: true  },
+  { name: "TOPIX",   val: "2,741.18",  chg: "-0.22%", data: [2800, 2782, 2796, 2768, 2781, 2755, 2770, 2745, 2760, 2741], up: false },
+];
+
+const sectors = [
+  { name: "テクノロジー", chg: "+3.2%", alloc: 62, up: true  },
+  { name: "自動車",       chg: "-0.4%", alloc: 8,  up: false },
+  { name: "エンタメ",     chg: "+1.6%", alloc: 14, up: true  },
+  { name: "現金",         chg: "—",     alloc: 16, up: true  },
 ];
 
 const transactions = [
-  { text: "Apple株を購入しました", amount: "+10株", time: "数秒前", up: true },
-  { text: "Tesla株を追加しました", amount: "+5株", time: "12分前", up: true },
-  { text: "Sony株を売却しました", amount: "-3株", time: "1時間前", up: false },
-  { text: "Nvidia株を購入しました", amount: "+2株", time: "本日", up: true },
+  { text: "Apple 10株 購入",    amount: "+¥285,640", time: "2分前",   up: true  },
+  { text: "Nvidia 2株 購入",    amount: "+¥253,800", time: "18分前",  up: true  },
+  { text: "Tesla 5株 追加購入", amount: "+¥182,320", time: "1時間前", up: true  },
+  { text: "Sony 3株 売却",      amount: "-¥40,260",  time: "3時間前", up: false },
+  { text: "Toyota 10株 売却",   amount: "-¥28,150",  time: "昨日",    up: false },
+  { text: "Microsoft 1株 購入", amount: "+¥61,820",  time: "昨日",    up: true  },
 ];
 
-const liveChart = [22, 24, 21, 26, 28, 25, 30, 29, 33, 32, 36, 38, 35, 42, 44, 46, 43, 48, 52, 50, 56, 60, 58, 64, 68];
+// 30-point 1-month portfolio chart — realistic uptrend with natural pullbacks
+const liveChart = [
+  3620, 3658, 3632, 3674, 3645, 3690, 3658, 3702, 3670, 3648,
+  3684, 3718, 3692, 3730, 3706, 3748, 3720, 3762, 3734, 3778,
+  3750, 3795, 3765, 3812, 3784, 3758, 3804, 3842, 3816, 3856,
+];
+
+// 40-point extended chart for the live chart section
+const extendedChart = [
+  3420, 3458, 3432, 3468, 3445, 3480, 3455, 3492, 3468, 3440,
+  3475, 3510, 3485, 3522, 3498, 3535, 3510, 3548, 3522, 3560,
+  3534, 3572, 3546, 3585, 3558, 3532, 3568, 3604, 3580, 3618,
+  3595, 3634, 3610, 3650, 3626, 3665, 3642, 3680, 3658, 3700,
+];
+
+const timeframes = ["1日", "1週", "1ヶ月", "3ヶ月", "1年", "全期間"];
+
+type Tab = "home" | "portfolio" | "markets" | "profile";
+
+// ─── Root ────────────────────────────────────────────────────────────
 
 function Dashboard() {
-  const [balance, setBalance] = useState(3820000);
+  const [balance, setBalance] = useState(3_820_440);
   const [profit, setProfit] = useState(12.4);
+  const [activeTab, setActiveTab] = useState<Tab>("home");
+  const [timeframe, setTimeframe] = useState("1ヶ月");
 
   useEffect(() => {
     const id = setInterval(() => {
-      setBalance((b) => b + Math.random() * 900 + 150);
-      setProfit((p) => +(p + Math.random() * 0.02).toFixed(2));
-    }, 1200);
+      setBalance((b) => Math.round(b + (Math.random() - 0.42) * 55));
+      setProfit((p) =>
+        +Math.max(10.5, Math.min(15.8, p + (Math.random() - 0.48) * 0.04)).toFixed(2),
+      );
+    }, 3500);
     return () => clearInterval(id);
   }, []);
 
@@ -55,12 +135,12 @@ function Dashboard() {
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-background text-foreground">
-      <div className="pointer-events-none fixed inset-x-0 top-0 h-[60vh] bg-[var(--gradient-radial-gold)] opacity-50" />
-      <div className="pointer-events-none fixed -left-40 top-1/3 h-[500px] w-[500px] rounded-full bg-gold/10 blur-3xl" />
+      <div className="pointer-events-none fixed inset-x-0 top-0 h-[60vh] bg-[var(--gradient-radial-gold)] opacity-40" />
+      <div className="pointer-events-none fixed -left-40 top-1/3 h-[500px] w-[500px] rounded-full bg-gold/8 blur-3xl" />
       <div className="pointer-events-none fixed -right-40 bottom-0 h-[500px] w-[500px] rounded-full bg-gold/5 blur-3xl" />
-      <Particles count={10} />
+      <Particles count={8} />
 
-      {/* Header */}
+      {/* Header — logo + logout only */}
       <header className="sticky top-0 z-40 backdrop-blur-xl">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4">
           <Link to="/" className="flex items-center gap-2">
@@ -69,193 +149,399 @@ function Dashboard() {
             </span>
             <span className="font-display text-lg tracking-tight">Aurea</span>
           </Link>
-          <div className="flex items-center gap-2">
-            <button className="grid size-9 place-items-center rounded-full glass" aria-label="検索">
-              <Search className="size-4 text-muted-foreground" />
-            </button>
-            <button className="grid size-9 place-items-center rounded-full glass" aria-label="通知">
-              <Bell className="size-4 text-gold" />
-            </button>
-            <button className="grid size-9 place-items-center rounded-full glass" aria-label="設定">
-              <Settings className="size-4 text-muted-foreground" />
-            </button>
-            <Link to="/login" className="grid size-9 place-items-center rounded-full glass" aria-label="ログアウト">
-              <LogOut className="size-4 text-muted-foreground" />
-            </Link>
-          </div>
+          <Link to="/login" className="flex items-center gap-2 rounded-full glass px-4 py-2 text-sm text-muted-foreground transition hover:text-foreground" aria-label="ログアウト">
+            <LogOut className="size-4" />
+            <span className="hidden sm:inline">ログアウト</span>
+          </Link>
         </div>
       </header>
 
-      <main className="relative mx-auto max-w-6xl px-5 pb-24">
-        {/* Welcome */}
-        <div className="animate-rise mb-8 mt-4">
-          <p className="text-xs uppercase tracking-[0.3em] text-gold">ダッシュボード</p>
-          <h1 className="mt-3 font-display text-3xl tracking-tight md:text-5xl">
-            お帰りなさい、<span className="text-gradient-gold">Daniel</span>
-          </h1>
-          <p className="mt-2 text-sm text-muted-foreground">本日の市場はあなたに微笑んでいます。</p>
-        </div>
-
-        {/* Balance + live chart */}
-        <div className="grid gap-4 md:grid-cols-3">
-          <div className="relative overflow-hidden rounded-3xl glass-gold p-6 md:col-span-2">
-            <div className="absolute -right-20 -top-20 size-56 rounded-full bg-gold/20 blur-3xl" />
-            <div className="absolute -bottom-32 -left-20 size-56 rounded-full bg-[oklch(0.78_0.16_150)]/15 blur-3xl" />
-            <div className="relative">
-              <div className="flex items-start justify-between">
-                <div>
-                  <p className="text-xs uppercase tracking-widest text-muted-foreground">総資産</p>
-                  <p className="mt-2 font-display text-4xl tracking-tight tabular-nums text-foreground md:text-5xl">
-                    ¥{fmtY(balance)}
-                  </p>
-                  <p className="mt-2 inline-flex items-center gap-1 rounded-full bg-[oklch(0.78_0.16_150)]/10 px-3 py-1 text-xs text-[color:var(--success)] shadow-[0_0_24px_oklch(0.78_0.16_150_/_0.3)]">
-                    <ArrowUpRight className="size-3" /> 本日の利益 +{profit}%
-                  </p>
-                </div>
-                <div className="grid size-12 place-items-center rounded-2xl glass-gold">
-                  <Wallet className="size-5 text-gold" />
-                </div>
-              </div>
-
-              <div className="mt-5">
-                <StockChart data={liveChart} width={600} height={120} className="h-32 w-full" color="var(--gold)" />
-              </div>
-              <div className="mt-2 flex items-center justify-between text-[10px] text-muted-foreground">
-                <span>1日</span><span>1週</span>
-                <span className="rounded-full bg-gold px-3 py-0.5 text-[10px] font-medium text-primary-foreground">1ヶ月</span>
-                <span>3ヶ月</span><span>1年</span><span>全期間</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Quick stats */}
-          <div className="grid grid-cols-2 gap-4 md:grid-cols-1">
-            <StatCard label="本日の損益" value="+¥128,420" up />
-            <StatCard label="保有銘柄" value="12" />
-            <StatCard label="現金残高" value="¥412,300" />
-            <StatCard label="月次リターン" value="+8.6%" up />
-          </div>
-        </div>
-
-        {/* Holdings */}
-        <section className="mt-12">
-          <SectionHeader title="保有株式" icon={PieChart} subtitle="お客様のポートフォリオ" />
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {holdings.map((h) => (
-              <div key={h.sym} className="group relative overflow-hidden rounded-3xl glass p-5 transition hover:border-gold/30 hover:shadow-gold">
-                <div className="absolute -right-10 -top-10 size-32 rounded-full bg-gold/5 blur-2xl transition group-hover:bg-gold/15" />
-                <div className="relative flex items-start justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="grid size-11 place-items-center rounded-2xl bg-gradient-to-br from-neutral-900 to-black text-sm font-semibold text-gold ring-1 ring-[color:var(--gold)]/30">
-                      {h.sym.slice(0, 2)}
-                    </div>
-                    <div>
-                      <p className="font-display text-base text-foreground">{h.sym}</p>
-                      <p className="text-xs text-muted-foreground">{h.jp}</p>
-                    </div>
-                  </div>
-                  <span className="inline-flex items-center gap-1 rounded-full bg-[oklch(0.78_0.16_150)]/10 px-2 py-0.5 text-[10px] text-[color:var(--success)] shadow-[0_0_16px_oklch(0.78_0.16_150_/_0.25)]">
-                    <ArrowUpRight className="size-3" /> {h.change}
-                  </span>
-                </div>
-                <div className="relative mt-4">
-                  <StockChart data={h.data} width={300} height={56} className="h-14 w-full" color="var(--gold)" />
-                </div>
-                <div className="relative mt-3 flex items-end justify-between">
-                  <p className="font-display text-xl tracking-tight tabular-nums">{h.price.startsWith("¥") ? h.price : `$${h.price}`}</p>
-                  <p className="text-xs text-muted-foreground">含み益</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* Market overview */}
-        <section className="mt-12">
-          <SectionHeader title="市場概要" icon={TrendingUp} subtitle="主要インデックス" />
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            {indices.map((idx) => (
-              <div key={idx.name} className="relative overflow-hidden rounded-3xl glass p-5 transition hover:border-gold/30">
-                <p className="text-xs text-muted-foreground">{idx.name}</p>
-                <p className="mt-1 font-display text-2xl tracking-tight tabular-nums">{idx.val}</p>
-                <p className="mt-1 text-xs text-[color:var(--success)]">{idx.chg}</p>
-                <div className="mt-3">
-                  <StockChart data={idx.data} width={220} height={40} className="h-10 w-full" color="var(--gold)" fill={false} />
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* Live chart */}
-        <section className="mt-12">
-          <SectionHeader title="リアルタイムチャート" icon={LineChart} subtitle="ポートフォリオの動き" />
-          <div className="relative overflow-hidden rounded-[2rem] glass-gold p-6 md:p-10">
-            <div className="absolute -right-32 -top-32 size-96 rounded-full bg-gold/20 blur-3xl" />
-            <div className="absolute -bottom-32 -left-32 size-96 rounded-full bg-gold/10 blur-3xl" />
-            <div className="relative">
-              <div className="mb-4 flex items-center gap-2 text-xs text-muted-foreground">
-                <span className="size-1.5 animate-pulse rounded-full bg-[color:var(--success)]" />
-                ライブ配信中 · 遅延 0秒
-              </div>
-              <StockChart data={[...liveChart, ...liveChart.map((v) => v + Math.random() * 6)]} width={1100} height={220} className="h-56 w-full md:h-72" color="var(--gold)" />
-            </div>
-          </div>
-        </section>
-
-        {/* Transactions */}
-        <section className="mt-12">
-          <SectionHeader title="最近の取引" icon={Wallet} subtitle="ご利用履歴" />
-          <div className="overflow-hidden rounded-3xl glass">
-            <ul className="divide-y divide-white/5">
-              {transactions.map((t, i) => (
-                <li key={i} className="flex items-center justify-between px-5 py-4 transition hover:bg-white/[0.02]">
-                  <div className="flex items-center gap-3">
-                    <div className={`grid size-10 place-items-center rounded-2xl glass-gold ${t.up ? "" : "opacity-80"}`}>
-                      <ArrowUpRight className={`size-4 ${t.up ? "text-[color:var(--success)]" : "text-[color:var(--loss)] rotate-180"}`} />
-                    </div>
-                    <div>
-                      <p className="text-sm text-foreground">{t.text}</p>
-                      <p className="text-[11px] text-muted-foreground">{t.time}</p>
-                    </div>
-                  </div>
-                  <p className={`text-sm font-medium tabular-nums ${t.up ? "text-[color:var(--success)]" : "text-[color:var(--loss)]"}`}>{t.amount}</p>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </section>
+      <main className="relative mx-auto max-w-6xl px-5 pb-32">
+        {activeTab === "home"      && <HomeTab      balance={balance} profit={profit} timeframe={timeframe} setTimeframe={setTimeframe} fmtY={fmtY} />}
+        {activeTab === "portfolio" && <PortfolioTab />}
+        {activeTab === "markets"   && <MarketsTab   />}
+        {activeTab === "profile"   && <ProfileTab   />}
       </main>
 
       <Ticker />
 
-      {/* Mobile bottom nav */}
-      <nav className="fixed inset-x-0 bottom-4 z-40 mx-auto flex w-[min(420px,calc(100%-2rem))] items-center justify-around rounded-full glass px-4 py-3 shadow-elev md:hidden">
-        {[
-          { i: Home, a: true },
-          { i: PieChart },
-          { i: LineChart },
-          { i: User },
-        ].map((it, i) => (
-          <button key={i} className={`grid size-10 place-items-center rounded-full ${it.a ? "bg-gradient-gold text-primary-foreground shadow-gold" : "text-muted-foreground"}`}>
-            <it.i className="size-4" />
-          </button>
-        ))}
+      {/* Bottom nav — always visible, dark background */}
+      <nav
+        className="fixed bottom-5 left-1/2 z-50 flex -translate-x-1/2 items-center gap-1 rounded-full px-3 py-2.5 shadow-elev"
+        style={{
+          background: "oklch(0.16 0.006 80 / 0.97)",
+          backdropFilter: "blur(28px) saturate(160%)",
+          border: "1px solid oklch(1 0 0 / 0.09)",
+        }}
+      >
+        {([
+          { id: "home"      as Tab, icon: Home,     label: "ホーム" },
+          { id: "portfolio" as Tab, icon: PieChart,  label: "保有"   },
+          { id: "markets"   as Tab, icon: LineChart, label: "市場"   },
+          { id: "profile"   as Tab, icon: User,      label: "設定"   },
+        ]).map((it) => {
+          const active = activeTab === it.id;
+          return (
+            <button
+              key={it.id}
+              onClick={() => setActiveTab(it.id)}
+              className={`flex flex-col items-center gap-0.5 rounded-full px-5 py-2 transition-all duration-200 ${
+                active ? "bg-gradient-gold shadow-gold" : "hover:bg-white/5"
+              }`}
+            >
+              <it.icon className={`size-[18px] ${active ? "text-primary-foreground" : "text-muted-foreground/60"}`} />
+              <span className={`text-[9px] font-medium tracking-wide ${active ? "text-primary-foreground" : "text-muted-foreground/50"}`}>
+                {it.label}
+              </span>
+            </button>
+          );
+        })}
       </nav>
     </div>
   );
 }
 
+// ─── Home tab ─────────────────────────────────────────────────────────
+
+function HomeTab({
+  balance, profit, timeframe, setTimeframe, fmtY,
+}: {
+  balance: number; profit: number;
+  timeframe: string; setTimeframe: (t: string) => void;
+  fmtY: (n: number) => string;
+}) {
+  return (
+    <>
+      <div className="animate-rise mb-8 mt-4">
+        <p className="text-xs uppercase tracking-[0.3em] text-gold">ダッシュボード</p>
+        <h1 className="mt-3 font-display text-3xl tracking-tight md:text-5xl">
+          お帰りなさい、<span className="text-gradient-gold">Daniel</span>
+        </h1>
+        <p className="mt-2 text-sm text-muted-foreground">本日の市場はあなたに微笑んでいます。</p>
+      </div>
+
+      {/* Balance card */}
+      <div className="grid gap-4 md:grid-cols-3">
+        <div className="relative overflow-hidden rounded-3xl glass-gold p-6 md:col-span-2">
+          <div className="absolute -right-20 -top-20 size-56 rounded-full bg-gold/15 blur-3xl" />
+          <div className="absolute -bottom-32 -left-20 size-56 rounded-full bg-[oklch(0.78_0.16_150)]/8 blur-3xl" />
+          <div className="relative">
+            <div className="flex items-start justify-between">
+              <div>
+                <p className="text-xs uppercase tracking-widest text-muted-foreground">総資産</p>
+                <p className="mt-2 font-display text-4xl tracking-tight tabular-nums md:text-5xl">
+                  ¥{fmtY(balance)}
+                </p>
+                <p className="mt-2 inline-flex items-center gap-1 rounded-full bg-[oklch(0.78_0.16_150)]/10 px-3 py-1 text-xs text-[color:var(--success)]">
+                  <ArrowUpRight className="size-3" /> 本日の利益 +{profit}%
+                </p>
+              </div>
+              <div className="grid size-12 place-items-center rounded-2xl glass-gold">
+                <Wallet className="size-5 text-gold" />
+              </div>
+            </div>
+            <div className="mt-6">
+              <StockChart data={liveChart} width={600} height={120} className="h-32 w-full" color="var(--gold)" />
+            </div>
+            <div className="mt-3 flex items-center justify-between gap-0.5">
+              {timeframes.map((t) => (
+                <button
+                  key={t}
+                  onClick={() => setTimeframe(t)}
+                  className={`rounded-full px-2.5 py-0.5 text-[10px] font-medium transition-all ${
+                    timeframe === t
+                      ? "bg-gold text-primary-foreground"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {t}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3 md:grid-cols-1">
+          <StatCard label="本日の損益"   value="+¥128,420" up />
+          <StatCard label="保有銘柄"     value="6銘柄" />
+          <StatCard label="現金残高"     value="¥412,300" />
+          <StatCard label="月次リターン" value="+8.6%" up />
+        </div>
+      </div>
+
+      {/* Mini market strip */}
+      <section className="mt-10">
+        <SectionHeader title="市場概要" icon={TrendingUp} subtitle="主要インデックス" />
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          {indices.map((idx) => (
+            <div key={idx.name} className="relative overflow-hidden rounded-3xl glass p-5 transition hover:border-gold/30">
+              <p className="text-xs text-muted-foreground">{idx.name}</p>
+              <p className="mt-1 font-display text-xl tracking-tight tabular-nums">{idx.val}</p>
+              <p className={`mt-0.5 text-xs ${idx.up ? "text-[color:var(--success)]" : "text-[color:var(--loss)]"}`}>{idx.chg}</p>
+              <div className="mt-2">
+                <StockChart
+                  data={idx.data} width={220} height={36}
+                  className="h-9 w-full"
+                  color={idx.up ? "var(--gold)" : "var(--loss)"}
+                  fill={false}
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Recent transactions */}
+      <section className="mt-10">
+        <SectionHeader title="最近の取引" icon={Wallet} subtitle="ご利用履歴" />
+        <div className="overflow-hidden rounded-3xl glass">
+          <ul className="divide-y divide-white/5">
+            {transactions.map((t, i) => (
+              <li key={i} className="flex items-center justify-between px-5 py-4 transition hover:bg-white/[0.02]">
+                <div className="flex items-center gap-3">
+                  <div className={`grid size-10 place-items-center rounded-2xl ${t.up ? "glass-gold" : "glass"}`}>
+                    {t.up
+                      ? <ArrowUpRight   className="size-4 text-[color:var(--success)]" />
+                      : <ArrowDownRight className="size-4 text-[color:var(--loss)]" />}
+                  </div>
+                  <div>
+                    <p className="text-sm text-foreground">{t.text}</p>
+                    <p className="text-[11px] text-muted-foreground">{t.time}</p>
+                  </div>
+                </div>
+                <p className={`text-sm font-medium tabular-nums ${t.up ? "text-[color:var(--success)]" : "text-[color:var(--loss)]"}`}>
+                  {t.amount}
+                </p>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+    </>
+  );
+}
+
+// ─── Portfolio tab ─────────────────────────────────────────────────────
+
+function PortfolioTab() {
+  return (
+    <>
+      <div className="animate-rise mb-8 mt-4">
+        <p className="text-xs uppercase tracking-[0.3em] text-gold">ポートフォリオ</p>
+        <h1 className="mt-3 font-display text-3xl tracking-tight md:text-5xl">保有株式</h1>
+        <p className="mt-2 text-sm text-muted-foreground">6銘柄 · 総評価額 ¥1,799,750</p>
+      </div>
+
+      <section className="mb-10">
+        <SectionHeader title="セクター配分" icon={PieChart} subtitle="資産配分" />
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          {sectors.map((s) => (
+            <div key={s.name} className="rounded-3xl glass p-5">
+              <p className="text-xs text-muted-foreground">{s.name}</p>
+              <p className="mt-2 font-display text-2xl tracking-tight">{s.alloc}%</p>
+              <div className="mt-2 h-1 rounded-full bg-white/10">
+                <div className="h-1 rounded-full bg-gradient-gold" style={{ width: `${s.alloc}%` }} />
+              </div>
+              <p className={`mt-2 text-xs ${s.up ? "text-[color:var(--success)]" : "text-[color:var(--loss)]"}`}>{s.chg}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section>
+        <SectionHeader title="保有銘柄" icon={TrendingUp} subtitle="個別株" />
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {holdings.map((h) => (
+            <div key={h.sym} className="group relative overflow-hidden rounded-3xl glass p-5 transition hover:border-gold/30 hover:shadow-gold">
+              <div className="absolute -right-10 -top-10 size-32 rounded-full bg-gold/5 blur-2xl transition group-hover:bg-gold/10" />
+              <div className="relative flex items-start justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="grid size-11 place-items-center rounded-2xl bg-gradient-to-br from-neutral-900 to-black text-sm font-semibold text-gold ring-1 ring-[color:var(--gold)]/30">
+                    {h.sym.slice(0, 2)}
+                  </div>
+                  <div>
+                    <p className="font-display text-base text-foreground">{h.sym}</p>
+                    <p className="text-xs text-muted-foreground">{h.jp}</p>
+                  </div>
+                </div>
+                <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] ${
+                  h.up
+                    ? "bg-[oklch(0.78_0.16_150)]/10 text-[color:var(--success)]"
+                    : "bg-[oklch(0.65_0.2_25)]/10 text-[color:var(--loss)]"
+                }`}>
+                  {h.up ? <ArrowUpRight className="size-3" /> : <ArrowDownRight className="size-3" />}
+                  {h.change}
+                </span>
+              </div>
+              <div className="relative mt-4">
+                <StockChart
+                  data={h.data} width={300} height={56}
+                  className="h-14 w-full"
+                  color={h.up ? "var(--gold)" : "var(--loss)"}
+                />
+              </div>
+              <div className="relative mt-3 flex items-end justify-between">
+                <div>
+                  <p className="font-display text-xl tracking-tight tabular-nums">{h.price}</p>
+                  <p className="text-xs text-muted-foreground">{h.shares}株保有</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-sm tabular-nums">{h.value}</p>
+                  <p className="text-xs text-muted-foreground">評価額</p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+    </>
+  );
+}
+
+// ─── Markets tab ──────────────────────────────────────────────────────
+
+function MarketsTab() {
+  return (
+    <>
+      <div className="animate-rise mb-8 mt-4">
+        <p className="text-xs uppercase tracking-[0.3em] text-gold">マーケット</p>
+        <h1 className="mt-3 font-display text-3xl tracking-tight md:text-5xl">市場概要</h1>
+        <p className="mt-2 text-sm text-muted-foreground">主要指数とリアルタイムデータ</p>
+      </div>
+
+      <section className="mb-10">
+        <SectionHeader title="主要インデックス" icon={Globe2} subtitle="グローバル市場" />
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          {indices.map((idx) => (
+            <div key={idx.name} className="relative overflow-hidden rounded-3xl glass p-5 transition hover:border-gold/30">
+              <p className="text-xs text-muted-foreground">{idx.name}</p>
+              <p className="mt-1 font-display text-2xl tracking-tight tabular-nums">{idx.val}</p>
+              <p className={`mt-0.5 text-xs ${idx.up ? "text-[color:var(--success)]" : "text-[color:var(--loss)]"}`}>{idx.chg}</p>
+              <div className="mt-3">
+                <StockChart
+                  data={idx.data} width={220} height={40}
+                  className="h-10 w-full"
+                  color={idx.up ? "var(--gold)" : "var(--loss)"}
+                  fill={false}
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section>
+        <SectionHeader title="ポートフォリオ推移" icon={LineChart} subtitle="リアルタイムチャート" />
+        <div className="relative overflow-hidden rounded-[2rem] glass-gold p-6 md:p-10">
+          <div className="absolute -right-32 -top-32 size-96 rounded-full bg-gold/15 blur-3xl" />
+          <div className="absolute -bottom-32 -left-32 size-96 rounded-full bg-gold/8 blur-3xl" />
+          <div className="relative">
+            <div className="mb-1 flex items-center justify-between">
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <span className="size-1.5 animate-pulse rounded-full bg-[color:var(--success)]" />
+                ライブ配信中 · 遅延 0秒
+              </div>
+              <p className="font-display text-xl tracking-tight text-[color:var(--success)]">+¥128,420</p>
+            </div>
+            <p className="mb-5 text-xs text-muted-foreground">過去40取引セッション</p>
+            <StockChart
+              data={extendedChart} width={1100} height={220}
+              className="h-56 w-full md:h-72"
+              color="var(--gold)"
+            />
+          </div>
+        </div>
+      </section>
+    </>
+  );
+}
+
+// ─── Profile tab ──────────────────────────────────────────────────────
+
+function ProfileTab() {
+  return (
+    <>
+      <div className="animate-rise mb-8 mt-4">
+        <p className="text-xs uppercase tracking-[0.3em] text-gold">アカウント</p>
+        <h1 className="mt-3 font-display text-3xl tracking-tight md:text-5xl">プロフィール</h1>
+      </div>
+
+      <div className="mb-5 relative overflow-hidden rounded-3xl glass-gold p-6">
+        <div className="absolute -right-16 -top-16 size-48 rounded-full bg-gold/15 blur-3xl" />
+        <div className="relative flex items-center gap-4">
+          <div className="grid size-16 place-items-center rounded-2xl bg-gradient-gold shadow-gold">
+            <span className="font-display text-2xl font-bold text-primary-foreground">D</span>
+          </div>
+          <div>
+            <p className="font-display text-xl">Daniel Nakamura</p>
+            <p className="text-sm text-muted-foreground">daniel@aurea-invest.jp</p>
+            <span className="mt-1.5 inline-flex items-center gap-1 rounded-full bg-gold/15 px-2.5 py-0.5 text-[10px] text-gold">
+              <Award className="size-3" /> プレミアム会員
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div className="mb-5 grid grid-cols-3 gap-3">
+        <StatCard label="総資産"  value="¥3.82M" />
+        <StatCard label="利益率"  value="+12.4%" up />
+        <StatCard label="取引数"  value="147回" />
+      </div>
+
+      <div className="mb-5 overflow-hidden rounded-3xl glass p-5">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-xs uppercase tracking-widest text-gold">リスクプロフィール</p>
+            <p className="mt-1 font-display text-xl">成長型</p>
+            <p className="mt-0.5 text-xs text-muted-foreground">中〜高リスク · 長期投資</p>
+          </div>
+          <div className="grid size-12 place-items-center rounded-2xl glass-gold">
+            <Shield className="size-5 text-gold" />
+          </div>
+        </div>
+        <div className="mt-4 flex gap-1.5">
+          {[1, 2, 3, 4].map((n) => (
+            <div key={n} className={`h-1.5 flex-1 rounded-full ${n <= 3 ? "bg-gradient-gold" : "bg-white/10"}`} />
+          ))}
+        </div>
+      </div>
+
+      <div className="overflow-hidden rounded-3xl glass">
+        {["通知設定", "セキュリティ", "支払い方法", "取引履歴", "プライバシー", "ログアウト"].map((item, i, arr) => (
+          <button
+            key={item}
+            className={`flex w-full items-center justify-between px-5 py-4 text-sm transition hover:bg-white/[0.03] ${
+              i < arr.length - 1 ? "border-b border-white/5" : ""
+            } ${item === "ログアウト" ? "text-[color:var(--loss)]" : "text-foreground"}`}
+          >
+            {item}
+            {item !== "ログアウト" && <ChevronRight className="size-4 text-muted-foreground" />}
+          </button>
+        ))}
+      </div>
+    </>
+  );
+}
+
+// ─── Shared helpers ───────────────────────────────────────────────────
+
 function StatCard({ label, value, up }: { label: string; value: string; up?: boolean }) {
   return (
     <div className="rounded-3xl glass p-5">
       <p className="text-xs text-muted-foreground">{label}</p>
-      <p className={`mt-2 font-display text-xl tracking-tight tabular-nums ${up ? "text-[color:var(--success)]" : "text-foreground"}`}>{value}</p>
+      <p className={`mt-2 font-display text-xl tracking-tight tabular-nums ${up ? "text-[color:var(--success)]" : "text-foreground"}`}>
+        {value}
+      </p>
     </div>
   );
 }
 
-function SectionHeader({ title, subtitle, icon: Icon }: { title: string; subtitle: string; icon: React.ComponentType<{ className?: string }> }) {
+function SectionHeader({
+  title, subtitle, icon: Icon,
+}: {
+  title: string; subtitle: string;
+  icon: React.ComponentType<{ className?: string }>;
+}) {
   return (
     <div className="mb-5 flex items-end justify-between">
       <div>

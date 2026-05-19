@@ -24,13 +24,14 @@ function SignupPage() {
       <div className="pointer-events-none fixed -right-40 bottom-0 h-[500px] w-[500px] rounded-full bg-gold/5 blur-3xl" />
       <Particles count={18} />
 
-      <div className="pointer-events-none absolute inset-x-0 top-1/3 opacity-20">
+      <div className="pointer-events-none absolute inset-x-0 top-1/3 opacity-[0.18]">
         <StockChart
-          data={[12, 16, 14, 20, 18, 24, 22, 28, 26, 32, 30, 36, 34, 42, 40, 46, 44, 52, 50, 58, 56, 64]}
+          data={[3200, 3240, 3215, 3258, 3230, 3274, 3245, 3222, 3264, 3302, 3275, 3315, 3288, 3330, 3302, 3346, 3318, 3362, 3334, 3378, 3350, 3395, 3368, 3412, 3384, 3428, 3402, 3448, 3420, 3465]}
           width={1400}
           height={280}
           className="w-full"
           color="var(--gold)"
+          animate={false}
         />
       </div>
 

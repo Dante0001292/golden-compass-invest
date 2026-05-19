@@ -34,12 +34,12 @@ export const Route = createFileRoute("/")({
 });
 
 const markets = [
-  { sym: "TSLA", name: "テスラ", flag: "🇺🇸", price: "248.42", change: "+3.74%", data: [10, 12, 11, 14, 13, 16, 18, 17, 20, 22, 24, 26], up: true },
-  { sym: "AAPL", name: "アップル", flag: "🇺🇸", price: "192.31", change: "+2.18%", data: [14, 13, 15, 14, 16, 17, 18, 19, 20, 21, 22, 23], up: true },
-  { sym: "NVDA", name: "エヌビディア", flag: "🇺🇸", price: "892.10", change: "+5.23%", data: [8, 10, 11, 13, 12, 15, 17, 18, 20, 24, 27, 30], up: true },
-  { sym: "6758", name: "ソニーグループ", flag: "🇯🇵", price: "¥13,420", change: "+1.62%", data: [12, 13, 12, 14, 13, 14, 15, 16, 16, 17, 18, 19], up: true },
-  { sym: "7203", name: "トヨタ自動車", flag: "🇯🇵", price: "¥2,815", change: "-0.41%", data: [18, 17, 18, 16, 17, 15, 16, 14, 15, 14, 13, 14], up: false },
-  { sym: "9984", name: "ソフトバンクG", flag: "🇯🇵", price: "¥9,210", change: "+2.04%", data: [10, 11, 10, 12, 13, 14, 13, 15, 16, 17, 18, 19], up: true },
+  { sym: "TSLA", name: "テスラ",       flag: "🇺🇸", price: "248.42",  change: "+3.74%", data: [225, 238, 227, 244, 235, 248, 236, 252, 240, 245, 238, 248], up: true  },
+  { sym: "AAPL", name: "アップル",     flag: "🇺🇸", price: "192.31",  change: "+2.18%", data: [182, 181, 184, 182, 179, 183, 185, 183, 187, 185, 189, 192], up: true  },
+  { sym: "NVDA", name: "エヌビディア", flag: "🇺🇸", price: "892.10",  change: "+5.23%", data: [750, 790, 775, 815, 798, 840, 822, 856, 840, 868, 852, 892], up: true  },
+  { sym: "6758", name: "ソニーグループ",flag: "🇯🇵", price: "¥13,420", change: "+1.62%", data: [12700, 12750, 12725, 12780, 12755, 12810, 12790, 12840, 12820, 12870, 12850, 13420], up: true  },
+  { sym: "7203", name: "トヨタ自動車", flag: "🇯🇵", price: "¥2,815",  change: "-0.41%", data: [2920, 2905, 2918, 2896, 2910, 2888, 2902, 2878, 2895, 2858, 2875, 2815], up: false },
+  { sym: "9984", name: "ソフトバンクG",flag: "🇯🇵", price: "¥9,210",  change: "+2.04%", data: [8800, 8850, 8820, 8890, 8860, 8930, 8900, 8960, 8932, 8990, 8962, 9210], up: true  },
 ];
 
 const features = [
@@ -140,7 +140,7 @@ function Index() {
                     <p className="text-xs font-medium">NVDA</p>
                     <p className="text-[10px] text-[color:var(--success)]">+5.23%</p>
                   </div>
-                  <StockChart data={[8,11,10,14,13,17,20,24]} width={50} height={18} className="h-5 w-14" color="var(--success)" fill={false} />
+                  <StockChart data={[750, 790, 775, 815, 798, 840, 822, 856, 840, 868, 852, 892]} width={50} height={18} className="h-5 w-14" color="var(--success)" fill={false} animate={false} />
                 </div>
               </div>
               <div
