@@ -54,9 +54,9 @@ export function PhoneMockup() {
               <div className="mt-4 flex items-center justify-between">
                 <div>
                   <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Portfolio</p>
-                  <p className="font-display text-2xl tracking-tight text-foreground">$48,392<span className="text-gold">.50</span></p>
-                  <p className="mt-0.5 flex items-center gap-1 text-[11px] text-[color:var(--success)]">
-                    <ArrowUpRight className="size-3" /> +$1,284.20 (2.72%) today
+                  <p className="font-display text-2xl tracking-tight text-foreground tabular-nums">${whole}<span className="text-gold">.{cents}</span></p>
+                  <p className="mt-0.5 flex items-center gap-1 text-[11px] text-[color:var(--success)] tabular-nums">
+                    <ArrowUpRight className="size-3" /> +${fmt(delta)} ({pct}%) today
                   </p>
                 </div>
                 <div className="flex flex-col items-end gap-2">
