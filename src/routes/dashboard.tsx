@@ -203,6 +203,15 @@ function HomeTab({
   timeframe: string; setTimeframe: (t: string) => void;
   fmtY: (n: number) => string;
 }) {
+  const [saltBalance, setSaltBalance] = useState(15623321);
+
+  useEffect(() => {
+    const id = setInterval(() => {
+      setSaltBalance((b) => b + Math.round(Math.random() * 850 + 150));
+    }, 3000);
+    return () => clearInterval(id);
+  }, []);
+
   return (
     <>
       <div className="animate-rise mb-8 mt-4">
@@ -294,6 +303,30 @@ function HomeTab({
               </li>
             ))}
           </ul>
+        </div>
+      </section>
+
+      <section className="mt-10 mb-6">
+        <div className="relative overflow-hidden rounded-[2rem] glass p-6 md:p-8 transition hover:border-gold/30 hover:shadow-gold">
+          <div className="absolute -right-20 -top-20 size-64 rounded-full bg-gold/10 blur-3xl" />
+          <div className="absolute -bottom-20 -left-20 size-64 rounded-full bg-[oklch(0.78_0.16_150)]/5 blur-3xl" />
+          <div className="relative flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+              <p className="text-xs uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                <Award className="size-3 text-gold" />
+                ソルトクン投資 ——&gt; Salt-San investment
+              </p>
+              <p className="mt-3 font-display text-4xl tracking-tight tabular-nums md:text-5xl text-foreground">
+                ¥{fmtY(saltBalance)}
+              </p>
+              <p className="mt-2 inline-flex items-center gap-1 rounded-full bg-[oklch(0.78_0.16_150)]/10 px-3 py-1 text-xs text-[color:var(--success)]">
+                <ArrowUpRight className="size-3" /> 継続成長中
+              </p>
+            </div>
+            <div className="hidden md:grid size-16 place-items-center rounded-3xl glass-gold shrink-0">
+              <TrendingUp className="size-7 text-gold" />
+            </div>
+          </div>
         </div>
       </section>
     </>
