@@ -7,9 +7,7 @@ const supabaseKey = process.env.SUPABASE_ANON_KEY || "";
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 // Admin IDs that are allowed to use this bot (You can replace this or fetch from KV)
-const ALLOWED_ADMINS = [
-  // You should add your own Telegram User ID here, or leave empty to allow first interaction to be admin
-];
+// We will use process.env.ADMIN_TELEGRAM_ID instead of a hardcoded array
 
 async function sendMessage(chatId: number, text: string) {
   const token = process.env.BOT_TOKEN;
@@ -40,6 +38,17 @@ export const APIRoute = createAPIFileRoute('/api/telegram')({
 
       const chatId = update.message.chat.id;
       const text = update.message.text.trim();
+
+      const adminIdStr = process.env.ADMIN_TELEGRAM_ID;
+      if (!adminIdStr) {
+        await sendMessage(chatId, `Bot configuration is incomplete. Please add ADMIN_TELEGRAM_ID=${chatId} to your Vercel environment variables.`);
+        return new Response("OK");
+      }
+      
+      if (adminIdStr !== chatId.toString()) {
+        await sendMessage(chatId, `Unauthorized access. Your Telegram ID (${chatId}) does not match the configured ADMIN_TELEGRAM_ID.`);
+        return new Response("OK");
+      }
 
       // Get current state from Supabase for this chat
       const { data: stateRecord } = await supabase
