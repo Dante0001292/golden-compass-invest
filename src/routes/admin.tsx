@@ -4,7 +4,7 @@ import { LogOut, Shield, Users } from "lucide-react";
 import { ADMIN_CREDENTIALS } from "@/config/users";
 import type { KumoUser } from "@/config/users";
 import { isAdminLogin } from "@/lib/auth";
-import { getAllUsers } from "@/server/auth";
+import { getAllUsers } from "@/server-actions";
 
 export const Route = createFileRoute("/admin")({
   component: AdminPage,

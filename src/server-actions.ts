@@ -1,11 +1,13 @@
 import { createServerFn } from "@tanstack/react-start";
-import { createClient } from "@supabase/supabase-js";
 import type { KumoUser } from "@/config/users";
 import { ADMIN_CREDENTIALS } from "@/config/users";
 
-const supabaseUrl = process.env.SUPABASE_URL || "";
-const supabaseKey = process.env.SUPABASE_ANON_KEY || "";
-const supabase = createClient(supabaseUrl, supabaseKey);
+function getSupabase() {
+  const { createClient } = require("@supabase/supabase-js");
+  const supabaseUrl = process.env.SUPABASE_URL || "";
+  const supabaseKey = process.env.SUPABASE_ANON_KEY || "";
+  return createClient(supabaseUrl, supabaseKey);
+}
 
 export const verifyLogin = createServerFn(
   "POST",
@@ -26,6 +28,7 @@ export const verifyLogin = createServerFn(
     }
 
     try {
+      const supabase = getSupabase();
       const { data, error } = await supabase
         .from("kumo_users")
         .select("*")
@@ -58,12 +61,13 @@ export const getAllUsers = createServerFn(
   "GET",
   async (): Promise<KumoUser[]> => {
     try {
+      const supabase = getSupabase();
       const { data, error } = await supabase.from("kumo_users").select("*");
       if (error) {
         console.error("Supabase fetch error:", error);
         return [];
       }
-      return (data || []).map(u => ({
+      return (data || []).map((u: any) => ({
         id: u.id,
         username: u.username,
         displayName: u.display_name,

@@ -3,7 +3,7 @@ import type { KumoUser } from "@/config/users";
 
 const SESSION_KEY = "kumo_session";
 
-import { verifyLogin } from "@/server/auth";
+import { verifyLogin } from "@/server-actions";
 
 export async function loginUser(username: string, password: string): Promise<KumoUser | null> {
   const user = await verifyLogin({ data: { username, password } });
