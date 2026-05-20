@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import {
   ArrowDownRight,
@@ -18,64 +18,35 @@ import {
 import { Particles } from "@/components/landing/Particles";
 import { StockChart } from "@/components/landing/StockChart";
 import { Ticker } from "@/components/landing/Ticker";
+import { getCurrentUser, logout } from "@/lib/auth";
+import type { KumuUser } from "@/config/users";
 
 export const Route = createFileRoute("/dashboard")({
   component: Dashboard,
   head: () => ({
     meta: [
-      { title: "ダッシュボード — Aurea" },
+      { title: "ダッシュボード — Kumu Capital" },
       { name: "description", content: "ポートフォリオ、保有株式、リアルタイム市場データ。" },
     ],
   }),
 });
 
-// ─── Static data ─────────────────────────────────────────────────────
-// Normalized values that produce realistic-looking chart shapes
+// ─── Static market data ───────────────────────────────────────────────────────
 
 const holdings = [
-  {
-    sym: "AAPL", name: "Apple",     jp: "アップル",
-    price: "$192.31", shares: 15, change: "+2.18%", value: "¥432,800",
-    data: [182, 181, 184, 182, 179, 183, 185, 183, 187, 185, 189, 192],
-    up: true,
-  },
-  {
-    sym: "TSLA", name: "Tesla",     jp: "テスラ",
-    price: "$248.42", shares: 8,  change: "+3.74%", value: "¥298,600",
-    data: [225, 238, 227, 244, 235, 248, 236, 252, 240, 245, 238, 248],
-    up: true,
-  },
-  {
-    sym: "6758", name: "Sony",      jp: "ソニー",
-    price: "¥13,420", shares: 20, change: "+1.62%", value: "¥268,400",
-    data: [12700, 12750, 12725, 12780, 12755, 12810, 12790, 12840, 12820, 12870, 12850, 13420],
-    up: true,
-  },
-  {
-    sym: "7203", name: "Toyota",    jp: "トヨタ",
-    price: "¥2,815",  shares: 30, change: "-0.41%", value: "¥84,450",
-    data: [2920, 2905, 2918, 2896, 2910, 2888, 2902, 2878, 2895, 2858, 2875, 2815],
-    up: false,
-  },
-  {
-    sym: "NVDA", name: "Nvidia",    jp: "エヌビディア",
-    price: "$892.10", shares: 3,  change: "+5.23%", value: "¥402,300",
-    data: [750, 790, 775, 815, 798, 840, 822, 856, 840, 868, 852, 892],
-    up: true,
-  },
-  {
-    sym: "MSFT", name: "Microsoft", jp: "マイクロソフト",
-    price: "$415.32", shares: 5,  change: "-1.08%", value: "¥313,200",
-    data: [440, 436, 438, 432, 435, 429, 432, 425, 429, 421, 418, 415],
-    up: false,
-  },
+  { sym: "AAPL", name: "Apple",     jp: "アップル",       price: "$192.31", shares: 15, change: "+2.18%", value: "¥432,800", data: [182,181,184,182,179,183,185,183,187,185,189,192], up: true  },
+  { sym: "TSLA", name: "Tesla",     jp: "テスラ",         price: "$248.42", shares: 8,  change: "+3.74%", value: "¥298,600", data: [225,238,227,244,235,248,236,252,240,245,238,248], up: true  },
+  { sym: "6758", name: "Sony",      jp: "ソニー",         price: "¥13,420", shares: 20, change: "+1.62%", value: "¥268,400", data: [12700,12750,12725,12780,12755,12810,12790,12840,12820,12870,12850,13420], up: true  },
+  { sym: "7203", name: "Toyota",    jp: "トヨタ",         price: "¥2,815",  shares: 30, change: "-0.41%", value: "¥84,450",  data: [2920,2905,2918,2896,2910,2888,2902,2878,2895,2858,2875,2815], up: false },
+  { sym: "NVDA", name: "Nvidia",    jp: "エヌビディア",   price: "$892.10", shares: 3,  change: "+5.23%", value: "¥402,300", data: [750,790,775,815,798,840,822,856,840,868,852,892], up: true  },
+  { sym: "MSFT", name: "Microsoft", jp: "マイクロソフト", price: "$415.32", shares: 5,  change: "-1.08%", value: "¥313,200", data: [440,436,438,432,435,429,432,425,429,421,418,415], up: false },
 ];
 
 const indices = [
-  { name: "NASDAQ",  val: "17,842.12", chg: "+1.24%", data: [16800, 16950, 16820, 17050, 16940, 17180, 17060, 17320, 17200, 17420, 17310, 17560, 17440, 17620, 17842], up: true  },
-  { name: "日経平均", val: "38,451.20", chg: "-0.38%", data: [39200, 38950, 39100, 38750, 38920, 38600, 38780, 38450, 38620, 38451], up: false },
-  { name: "S&P 500", val: "5,624.18",  chg: "+0.86%", data: [5480, 5510, 5490, 5530, 5512, 5548, 5530, 5568, 5549, 5585, 5564, 5602, 5580, 5610, 5624], up: true  },
-  { name: "TOPIX",   val: "2,741.18",  chg: "-0.22%", data: [2800, 2782, 2796, 2768, 2781, 2755, 2770, 2745, 2760, 2741], up: false },
+  { name: "NASDAQ",  val: "17,842.12", chg: "+1.24%", data: [16800,16950,16820,17050,16940,17180,17060,17320,17200,17420,17310,17560,17440,17620,17842], up: true  },
+  { name: "日経平均", val: "38,451.20", chg: "-0.38%", data: [39200,38950,39100,38750,38920,38600,38780,38450,38620,38451], up: false },
+  { name: "S&P 500", val: "5,624.18",  chg: "+0.86%", data: [5480,5510,5490,5530,5512,5548,5530,5568,5549,5585,5564,5602,5580,5610,5624], up: true  },
+  { name: "TOPIX",   val: "2,741.18",  chg: "-0.22%", data: [2800,2782,2796,2768,2781,2755,2770,2745,2760,2741], up: false },
 ];
 
 const sectors = [
@@ -94,34 +65,46 @@ const transactions = [
   { text: "Microsoft 1株 購入", amount: "+¥61,820",  time: "昨日",    up: true  },
 ];
 
-// 30-point 1-month portfolio chart — realistic uptrend with natural pullbacks
 const liveChart = [
-  3620, 3658, 3632, 3674, 3645, 3690, 3658, 3702, 3670, 3648,
-  3684, 3718, 3692, 3730, 3706, 3748, 3720, 3762, 3734, 3778,
-  3750, 3795, 3765, 3812, 3784, 3758, 3804, 3842, 3816, 3856,
+  3620,3658,3632,3674,3645,3690,3658,3702,3670,3648,
+  3684,3718,3692,3730,3706,3748,3720,3762,3734,3778,
+  3750,3795,3765,3812,3784,3758,3804,3842,3816,3856,
 ];
 
-// 40-point extended chart for the live chart section
 const extendedChart = [
-  3420, 3458, 3432, 3468, 3445, 3480, 3455, 3492, 3468, 3440,
-  3475, 3510, 3485, 3522, 3498, 3535, 3510, 3548, 3522, 3560,
-  3534, 3572, 3546, 3585, 3558, 3532, 3568, 3604, 3580, 3618,
-  3595, 3634, 3610, 3650, 3626, 3665, 3642, 3680, 3658, 3700,
+  3420,3458,3432,3468,3445,3480,3455,3492,3468,3440,
+  3475,3510,3485,3522,3498,3535,3510,3548,3522,3560,
+  3534,3572,3546,3585,3558,3532,3568,3604,3580,3618,
+  3595,3634,3610,3650,3626,3665,3642,3680,3658,3700,
 ];
 
 const timeframes = ["1日", "1週", "1ヶ月", "3ヶ月", "1年", "全期間"];
-
 type Tab = "home" | "portfolio" | "markets" | "profile";
 
-// ─── Root ────────────────────────────────────────────────────────────
+// ─── Root ─────────────────────────────────────────────────────────────────────
 
 function Dashboard() {
-  const [balance, setBalance] = useState(3_820_440);
+  const navigate = useNavigate();
+  const [user, setUser] = useState<KumuUser | null>(null);
+  const [balance, setBalance] = useState(0);
   const [profit, setProfit] = useState(12.4);
   const [activeTab, setActiveTab] = useState<Tab>("home");
   const [timeframe, setTimeframe] = useState("1ヶ月");
 
+  // Auth guard — redirect to login if no session
   useEffect(() => {
+    const u = getCurrentUser();
+    if (!u) {
+      navigate({ to: "/login" });
+      return;
+    }
+    setUser(u);
+    setBalance(u.balance);
+  }, [navigate]);
+
+  // Realistic micro-fluctuation
+  useEffect(() => {
+    if (!user) return;
     const id = setInterval(() => {
       setBalance((b) => Math.round(b + (Math.random() - 0.42) * 55));
       setProfit((p) =>
@@ -129,7 +112,14 @@ function Dashboard() {
       );
     }, 3500);
     return () => clearInterval(id);
-  }, []);
+  }, [user]);
+
+  function handleLogout() {
+    logout();
+    navigate({ to: "/login" });
+  }
+
+  if (!user) return null;
 
   const fmtY = (n: number) => Math.round(n).toLocaleString("ja-JP");
 
@@ -140,32 +130,35 @@ function Dashboard() {
       <div className="pointer-events-none fixed -right-40 bottom-0 h-[500px] w-[500px] rounded-full bg-gold/5 blur-3xl" />
       <Particles count={8} />
 
-      {/* Header — logo + logout only */}
+      {/* Header */}
       <header className="sticky top-0 z-40 backdrop-blur-xl">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4">
           <Link to="/" className="flex items-center gap-2">
             <span className="grid size-8 place-items-center rounded-full bg-gradient-gold shadow-gold">
-              <span className="font-display text-base font-semibold text-primary-foreground">A</span>
+              <span className="font-display text-base font-semibold text-primary-foreground">K</span>
             </span>
-            <span className="font-display text-lg tracking-tight">Aurea</span>
+            <span className="font-display text-lg tracking-tight">Kumu Capital</span>
           </Link>
-          <Link to="/login" className="flex items-center gap-2 rounded-full glass px-4 py-2 text-sm text-muted-foreground transition hover:text-foreground" aria-label="ログアウト">
+          <button
+            onClick={handleLogout}
+            className="flex items-center gap-2 rounded-full glass px-4 py-2 text-sm text-muted-foreground transition hover:text-foreground"
+          >
             <LogOut className="size-4" />
             <span className="hidden sm:inline">ログアウト</span>
-          </Link>
+          </button>
         </div>
       </header>
 
       <main className="relative mx-auto max-w-6xl px-5 pb-32">
-        {activeTab === "home"      && <HomeTab      balance={balance} profit={profit} timeframe={timeframe} setTimeframe={setTimeframe} fmtY={fmtY} />}
+        {activeTab === "home"      && <HomeTab      user={user} balance={balance} profit={profit} timeframe={timeframe} setTimeframe={setTimeframe} fmtY={fmtY} />}
         {activeTab === "portfolio" && <PortfolioTab />}
         {activeTab === "markets"   && <MarketsTab   />}
-        {activeTab === "profile"   && <ProfileTab   />}
+        {activeTab === "profile"   && <ProfileTab   user={user} onLogout={handleLogout} />}
       </main>
 
       <Ticker />
 
-      {/* Bottom nav — always visible, dark background */}
+      {/* Bottom nav */}
       <nav
         className="fixed bottom-5 left-1/2 z-50 flex -translate-x-1/2 items-center gap-1 rounded-full px-3 py-2.5 shadow-elev"
         style={{
@@ -201,12 +194,12 @@ function Dashboard() {
   );
 }
 
-// ─── Home tab ─────────────────────────────────────────────────────────
+// ─── Home tab ─────────────────────────────────────────────────────────────────
 
 function HomeTab({
-  balance, profit, timeframe, setTimeframe, fmtY,
+  user, balance, profit, timeframe, setTimeframe, fmtY,
 }: {
-  balance: number; profit: number;
+  user: KumuUser; balance: number; profit: number;
   timeframe: string; setTimeframe: (t: string) => void;
   fmtY: (n: number) => string;
 }) {
@@ -215,12 +208,11 @@ function HomeTab({
       <div className="animate-rise mb-8 mt-4">
         <p className="text-xs uppercase tracking-[0.3em] text-gold">ダッシュボード</p>
         <h1 className="mt-3 font-display text-3xl tracking-tight md:text-5xl">
-          お帰りなさい、<span className="text-gradient-gold">Daniel</span>
+          お帰りなさい、<span className="text-gradient-gold">{user.displayName}</span>
         </h1>
         <p className="mt-2 text-sm text-muted-foreground">本日の市場はあなたに微笑んでいます。</p>
       </div>
 
-      {/* Balance card */}
       <div className="grid gap-4 md:grid-cols-3">
         <div className="relative overflow-hidden rounded-3xl glass-gold p-6 md:col-span-2">
           <div className="absolute -right-20 -top-20 size-56 rounded-full bg-gold/15 blur-3xl" />
@@ -249,9 +241,7 @@ function HomeTab({
                   key={t}
                   onClick={() => setTimeframe(t)}
                   className={`rounded-full px-2.5 py-0.5 text-[10px] font-medium transition-all ${
-                    timeframe === t
-                      ? "bg-gold text-primary-foreground"
-                      : "text-muted-foreground hover:text-foreground"
+                    timeframe === t ? "bg-gold text-primary-foreground" : "text-muted-foreground hover:text-foreground"
                   }`}
                 >
                   {t}
@@ -269,7 +259,6 @@ function HomeTab({
         </div>
       </div>
 
-      {/* Mini market strip */}
       <section className="mt-10">
         <SectionHeader title="市場概要" icon={TrendingUp} subtitle="主要インデックス" />
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -279,19 +268,13 @@ function HomeTab({
               <p className="mt-1 font-display text-xl tracking-tight tabular-nums">{idx.val}</p>
               <p className={`mt-0.5 text-xs ${idx.up ? "text-[color:var(--success)]" : "text-[color:var(--loss)]"}`}>{idx.chg}</p>
               <div className="mt-2">
-                <StockChart
-                  data={idx.data} width={220} height={36}
-                  className="h-9 w-full"
-                  color={idx.up ? "var(--gold)" : "var(--loss)"}
-                  fill={false}
-                />
+                <StockChart data={idx.data} width={220} height={36} className="h-9 w-full" color={idx.up ? "var(--gold)" : "var(--loss)"} fill={false} />
               </div>
             </div>
           ))}
         </div>
       </section>
 
-      {/* Recent transactions */}
       <section className="mt-10">
         <SectionHeader title="最近の取引" icon={Wallet} subtitle="ご利用履歴" />
         <div className="overflow-hidden rounded-3xl glass">
@@ -300,18 +283,14 @@ function HomeTab({
               <li key={i} className="flex items-center justify-between px-5 py-4 transition hover:bg-white/[0.02]">
                 <div className="flex items-center gap-3">
                   <div className={`grid size-10 place-items-center rounded-2xl ${t.up ? "glass-gold" : "glass"}`}>
-                    {t.up
-                      ? <ArrowUpRight   className="size-4 text-[color:var(--success)]" />
-                      : <ArrowDownRight className="size-4 text-[color:var(--loss)]" />}
+                    {t.up ? <ArrowUpRight className="size-4 text-[color:var(--success)]" /> : <ArrowDownRight className="size-4 text-[color:var(--loss)]" />}
                   </div>
                   <div>
                     <p className="text-sm text-foreground">{t.text}</p>
                     <p className="text-[11px] text-muted-foreground">{t.time}</p>
                   </div>
                 </div>
-                <p className={`text-sm font-medium tabular-nums ${t.up ? "text-[color:var(--success)]" : "text-[color:var(--loss)]"}`}>
-                  {t.amount}
-                </p>
+                <p className={`text-sm font-medium tabular-nums ${t.up ? "text-[color:var(--success)]" : "text-[color:var(--loss)]"}`}>{t.amount}</p>
               </li>
             ))}
           </ul>
@@ -321,7 +300,7 @@ function HomeTab({
   );
 }
 
-// ─── Portfolio tab ─────────────────────────────────────────────────────
+// ─── Portfolio tab ─────────────────────────────────────────────────────────────
 
 function PortfolioTab() {
   return (
@@ -360,25 +339,16 @@ function PortfolioTab() {
                     {h.sym.slice(0, 2)}
                   </div>
                   <div>
-                    <p className="font-display text-base text-foreground">{h.sym}</p>
+                    <p className="font-display text-base">{h.sym}</p>
                     <p className="text-xs text-muted-foreground">{h.jp}</p>
                   </div>
                 </div>
-                <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] ${
-                  h.up
-                    ? "bg-[oklch(0.78_0.16_150)]/10 text-[color:var(--success)]"
-                    : "bg-[oklch(0.65_0.2_25)]/10 text-[color:var(--loss)]"
-                }`}>
-                  {h.up ? <ArrowUpRight className="size-3" /> : <ArrowDownRight className="size-3" />}
-                  {h.change}
+                <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] ${h.up ? "bg-[oklch(0.78_0.16_150)]/10 text-[color:var(--success)]" : "bg-[oklch(0.65_0.2_25)]/10 text-[color:var(--loss)]"}`}>
+                  {h.up ? <ArrowUpRight className="size-3" /> : <ArrowDownRight className="size-3" />}{h.change}
                 </span>
               </div>
               <div className="relative mt-4">
-                <StockChart
-                  data={h.data} width={300} height={56}
-                  className="h-14 w-full"
-                  color={h.up ? "var(--gold)" : "var(--loss)"}
-                />
+                <StockChart data={h.data} width={300} height={56} className="h-14 w-full" color={h.up ? "var(--gold)" : "var(--loss)"} />
               </div>
               <div className="relative mt-3 flex items-end justify-between">
                 <div>
@@ -398,7 +368,7 @@ function PortfolioTab() {
   );
 }
 
-// ─── Markets tab ──────────────────────────────────────────────────────
+// ─── Markets tab ──────────────────────────────────────────────────────────────
 
 function MarketsTab() {
   return (
@@ -418,12 +388,7 @@ function MarketsTab() {
               <p className="mt-1 font-display text-2xl tracking-tight tabular-nums">{idx.val}</p>
               <p className={`mt-0.5 text-xs ${idx.up ? "text-[color:var(--success)]" : "text-[color:var(--loss)]"}`}>{idx.chg}</p>
               <div className="mt-3">
-                <StockChart
-                  data={idx.data} width={220} height={40}
-                  className="h-10 w-full"
-                  color={idx.up ? "var(--gold)" : "var(--loss)"}
-                  fill={false}
-                />
+                <StockChart data={idx.data} width={220} height={40} className="h-10 w-full" color={idx.up ? "var(--gold)" : "var(--loss)"} fill={false} />
               </div>
             </div>
           ))}
@@ -444,11 +409,7 @@ function MarketsTab() {
               <p className="font-display text-xl tracking-tight text-[color:var(--success)]">+¥128,420</p>
             </div>
             <p className="mb-5 text-xs text-muted-foreground">過去40取引セッション</p>
-            <StockChart
-              data={extendedChart} width={1100} height={220}
-              className="h-56 w-full md:h-72"
-              color="var(--gold)"
-            />
+            <StockChart data={extendedChart} width={1100} height={220} className="h-56 w-full md:h-72" color="var(--gold)" />
           </div>
         </div>
       </section>
@@ -456,9 +417,9 @@ function MarketsTab() {
   );
 }
 
-// ─── Profile tab ──────────────────────────────────────────────────────
+// ─── Profile tab ──────────────────────────────────────────────────────────────
 
-function ProfileTab() {
+function ProfileTab({ user, onLogout }: { user: KumuUser; onLogout: () => void }) {
   return (
     <>
       <div className="animate-rise mb-8 mt-4">
@@ -470,11 +431,13 @@ function ProfileTab() {
         <div className="absolute -right-16 -top-16 size-48 rounded-full bg-gold/15 blur-3xl" />
         <div className="relative flex items-center gap-4">
           <div className="grid size-16 place-items-center rounded-2xl bg-gradient-gold shadow-gold">
-            <span className="font-display text-2xl font-bold text-primary-foreground">D</span>
+            <span className="font-display text-2xl font-bold text-primary-foreground">
+              {user.displayName.charAt(0).toUpperCase()}
+            </span>
           </div>
           <div>
-            <p className="font-display text-xl">Daniel Nakamura</p>
-            <p className="text-sm text-muted-foreground">daniel@aurea-invest.jp</p>
+            <p className="font-display text-xl">{user.displayName}</p>
+            <p className="text-sm text-muted-foreground">@{user.username}</p>
             <span className="mt-1.5 inline-flex items-center gap-1 rounded-full bg-gold/15 px-2.5 py-0.5 text-[10px] text-gold">
               <Award className="size-3" /> プレミアム会員
             </span>
@@ -483,7 +446,7 @@ function ProfileTab() {
       </div>
 
       <div className="mb-5 grid grid-cols-3 gap-3">
-        <StatCard label="総資産"  value="¥3.82M" />
+        <StatCard label="総資産"  value={`¥${Math.round(user.balance).toLocaleString("ja-JP")}`} />
         <StatCard label="利益率"  value="+12.4%" up />
         <StatCard label="取引数"  value="147回" />
       </div>
@@ -507,23 +470,28 @@ function ProfileTab() {
       </div>
 
       <div className="overflow-hidden rounded-3xl glass">
-        {["通知設定", "セキュリティ", "支払い方法", "取引履歴", "プライバシー", "ログアウト"].map((item, i, arr) => (
+        {["通知設定", "セキュリティ", "支払い方法", "取引履歴", "プライバシー"].map((item, i, arr) => (
           <button
             key={item}
-            className={`flex w-full items-center justify-between px-5 py-4 text-sm transition hover:bg-white/[0.03] ${
-              i < arr.length - 1 ? "border-b border-white/5" : ""
-            } ${item === "ログアウト" ? "text-[color:var(--loss)]" : "text-foreground"}`}
+            className={`flex w-full items-center justify-between px-5 py-4 text-sm transition hover:bg-white/[0.03] ${i < arr.length - 1 ? "border-b border-white/5" : ""}`}
           >
             {item}
-            {item !== "ログアウト" && <ChevronRight className="size-4 text-muted-foreground" />}
+            <ChevronRight className="size-4 text-muted-foreground" />
           </button>
         ))}
+        <button
+          onClick={onLogout}
+          className="flex w-full items-center justify-between border-t border-white/5 px-5 py-4 text-sm text-[color:var(--loss)] transition hover:bg-white/[0.03]"
+        >
+          ログアウト
+          <LogOut className="size-4" />
+        </button>
       </div>
     </>
   );
 }
 
-// ─── Shared helpers ───────────────────────────────────────────────────
+// ─── Shared helpers ───────────────────────────────────────────────────────────
 
 function StatCard({ label, value, up }: { label: string; value: string; up?: boolean }) {
   return (
