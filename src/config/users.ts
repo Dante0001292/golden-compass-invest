@@ -5,6 +5,9 @@ export const ADMIN_CREDENTIALS = {
   password: "password", // Change this in a real environment
 };
 
+export const TELEGRAM_HANDLE = "@kumocapital";
+export const TELEGRAM_URL = "https://t.me/kumocapital";
+
 export interface KumoUser {
   id: string;
   displayName: string;
