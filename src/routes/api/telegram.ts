@@ -1,6 +1,8 @@
 import { createAPIFileRoute } from '@tanstack/react-start/api';
-import { kv } from '@vercel/kv';
+import { Redis } from "@upstash/redis";
 import type { KumoUser } from '@/config/users';
+
+const kv = Redis.fromEnv();
 
 // Admin IDs that are allowed to use this bot (You can replace this or fetch from KV)
 const ALLOWED_ADMINS = [

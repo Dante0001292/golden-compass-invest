@@ -1,5 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
-import { kv } from "@vercel/kv";
+import { Redis } from "@upstash/redis";
+
+const kv = Redis.fromEnv();
 import type { KumoUser } from "@/config/users";
 import { ADMIN_CREDENTIALS } from "@/config/users";
 
