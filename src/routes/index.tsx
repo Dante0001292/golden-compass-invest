@@ -21,13 +21,13 @@ export const Route = createFileRoute("/")({
   component: Index,
   head: () => ({
     meta: [
-      { title: "Kumu Capital — 米国・日本株のプレミアム投資アプリ" },
+      { title: "Kumo Capital — 米国・日本株のプレミアム投資アプリ" },
       {
         name: "description",
         content:
-          "Kumu Capitalは上質な招待制投資プラットフォーム。Apple、Tesla、Sony、Toyota、Nvidiaをリアルタイム価格と銀行水準のセキュリティで取引できます。",
+          "Kumo Capitalは上質な招待制投資プラットフォーム。Apple、Tesla、Sony、Toyota、Nvidiaをリアルタイム価格と銀行水準のセキュリティで取引できます。",
       },
-      { property: "og:title", content: "Kumu Capital — 資産を、共に育てる。" },
+      { property: "og:title", content: "Kumo Capital — 資産を、共に育てる。" },
       { property: "og:description", content: "米国株と日本株を、ひとつの上質なアプリで。" },
     ],
   }),
@@ -68,7 +68,7 @@ function Index() {
             <span className="grid size-8 place-items-center rounded-full bg-gradient-gold shadow-gold">
               <span className="font-display text-base font-semibold text-primary-foreground">K</span>
             </span>
-            <span className="font-display text-lg tracking-tight">Kumu Capital</span>
+            <span className="font-display text-lg tracking-tight">Kumo Capital</span>
           </a>
           <nav className="hidden items-center gap-8 text-sm text-muted-foreground md:flex">
             <a href="#markets" className="hover:text-foreground">マーケット</a>
@@ -169,7 +169,7 @@ function Index() {
 
       <section id="features" className="relative mx-auto max-w-6xl px-5 py-24">
         <div className="mb-14 text-center">
-          <p className="text-xs uppercase tracking-[0.3em] text-gold">Kumu Capitalが選ばれる理由</p>
+          <p className="text-xs uppercase tracking-[0.3em] text-gold">Kumo Capitalが選ばれる理由</p>
           <h2 className="mt-3 font-display text-4xl tracking-tight md:text-5xl">
             次世代の投資家のために、<span className="text-gradient-gold">設計されました。</span>
           </h2>
@@ -243,7 +243,7 @@ function Index() {
           <div className="absolute -bottom-32 -left-32 size-96 rounded-full bg-gold/10 blur-3xl" />
           <div className="relative grid items-center gap-12 md:grid-cols-2">
             <div>
-              <p className="text-xs uppercase tracking-[0.3em] text-gold">Kumu Capital アプリ</p>
+              <p className="text-xs uppercase tracking-[0.3em] text-gold">Kumo Capital アプリ</p>
               <h2 className="mt-3 font-display text-4xl leading-tight tracking-tight md:text-5xl">
                 あなたのポートフォリオを、振付ける。
               </h2>
@@ -310,7 +310,7 @@ function Index() {
               豊かさを、<span className="text-gradient-gold">優雅に</span>手のひらへ。
             </h2>
             <p className="mx-auto mt-5 max-w-md text-muted-foreground">
-              120万人の投資家が、世界の名だたる企業をKumu Capitalで取引しています。
+              120万人の投資家が、世界の名だたる企業をKumo Capitalで取引しています。
             </p>
             <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
               <Link to="/signup" className="inline-flex items-center justify-center gap-2 rounded-full bg-gradient-gold px-7 py-4 text-base font-medium text-primary-foreground shadow-gold transition hover:scale-[1.02]">
@@ -334,7 +334,7 @@ function Index() {
             <span className="grid size-7 place-items-center rounded-full bg-gradient-gold">
               <span className="font-display text-sm font-semibold text-primary-foreground">K</span>
             </span>
-            <span className="font-display tracking-tight">Kumu Capital</span>
+            <span className="font-display tracking-tight">Kumo Capital</span>
             <span className="ml-3 text-xs text-muted-foreground">© 2026 · 東京 · ニューヨーク</span>
           </div>
           <div className="flex gap-6 text-xs text-muted-foreground">

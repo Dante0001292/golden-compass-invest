@@ -19,13 +19,13 @@ import { Particles } from "@/components/landing/Particles";
 import { StockChart } from "@/components/landing/StockChart";
 import { Ticker } from "@/components/landing/Ticker";
 import { getCurrentUser, logout } from "@/lib/auth";
-import type { KumuUser } from "@/config/users";
+import type { KumoUser } from "@/config/users";
 
 export const Route = createFileRoute("/dashboard")({
   component: Dashboard,
   head: () => ({
     meta: [
-      { title: "ダッシュボード — Kumu Capital" },
+      { title: "ダッシュボード — Kumo Capital" },
       { name: "description", content: "ポートフォリオ、保有株式、リアルタイム市場データ。" },
     ],
   }),
@@ -85,7 +85,7 @@ type Tab = "home" | "portfolio" | "markets" | "profile";
 
 function Dashboard() {
   const navigate = useNavigate();
-  const [user, setUser] = useState<KumuUser | null>(null);
+  const [user, setUser] = useState<KumoUser | null>(null);
   const [balance, setBalance] = useState(0);
   const [profit, setProfit] = useState(12.4);
   const [activeTab, setActiveTab] = useState<Tab>("home");
@@ -137,7 +137,7 @@ function Dashboard() {
             <span className="grid size-8 place-items-center rounded-full bg-gradient-gold shadow-gold">
               <span className="font-display text-base font-semibold text-primary-foreground">K</span>
             </span>
-            <span className="font-display text-lg tracking-tight">Kumu Capital</span>
+            <span className="font-display text-lg tracking-tight">Kumo Capital</span>
           </Link>
           <button
             onClick={handleLogout}
@@ -199,7 +199,7 @@ function Dashboard() {
 function HomeTab({
   user, balance, profit, timeframe, setTimeframe, fmtY,
 }: {
-  user: KumuUser; balance: number; profit: number;
+  user: KumoUser; balance: number; profit: number;
   timeframe: string; setTimeframe: (t: string) => void;
   fmtY: (n: number) => string;
 }) {
@@ -419,7 +419,7 @@ function MarketsTab() {
 
 // ─── Profile tab ──────────────────────────────────────────────────────────────
 
-function ProfileTab({ user, onLogout }: { user: KumuUser; onLogout: () => void }) {
+function ProfileTab({ user, onLogout }: { user: KumoUser; onLogout: () => void }) {
   return (
     <>
       <div className="animate-rise mb-8 mt-4">

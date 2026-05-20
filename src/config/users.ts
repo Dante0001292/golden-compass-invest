@@ -1,5 +1,5 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// KUMU CAPITAL — User Configuration
+// KUMO CAPITAL — User Configuration
 //
 // Admin: add / remove users in the USERS array below, then push to GitHub.
 // Cloudflare Pages will auto-deploy the changes in ~60 seconds.
@@ -8,7 +8,7 @@
 // make sure the id is unique.
 // ─────────────────────────────────────────────────────────────────────────────
 
-export interface KumuUser {
+export interface KumoUser {
   id: string;
   displayName: string; // Name shown on the dashboard welcome screen
   username: string;    // Used to log in
@@ -17,12 +17,12 @@ export interface KumuUser {
 }
 
 // ── Users ─────────────────────────────────────────────────────────────────────
-export const USERS: KumuUser[] = [
+export const USERS: KumoUser[] = [
   {
     id: "u1",
     displayName: "Daniel Nakamura",
     username: "daniel",
-    password: "kumu2024",
+    password: "kumo2024",
     balance: 3_820_440,
   },
   // ── Add more users below ────────────────────────────────────────────────────
@@ -39,10 +39,10 @@ export const USERS: KumuUser[] = [
 // Change the password before deploying!
 export const ADMIN_CREDENTIALS = {
   username: "admin",
-  password: "KumuAdmin2024!",
+  password: "KumoAdmin2024!",
 } as const;
 
 // ── Telegram ──────────────────────────────────────────────────────────────────
 // Update this to your actual Telegram handle or group link.
-export const TELEGRAM_HANDLE = "@KumuCapital";
-export const TELEGRAM_URL = "https://t.me/KumuCapital";
+export const TELEGRAM_HANDLE = "@KumoCapital";
+export const TELEGRAM_URL = "https://t.me/KumoCapital";

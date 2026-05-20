@@ -1,9 +1,9 @@
 import { USERS, ADMIN_CREDENTIALS } from "@/config/users";
-import type { KumuUser } from "@/config/users";
+import type { KumoUser } from "@/config/users";
 
-const SESSION_KEY = "kumu_session";
+const SESSION_KEY = "kumo_session";
 
-export function loginUser(username: string, password: string): KumuUser | null {
+export function loginUser(username: string, password: string): KumoUser | null {
   const user = USERS.find(
     (u) =>
       u.username.toLowerCase() === username.toLowerCase() &&
@@ -23,11 +23,11 @@ export function isAdminLogin(username: string, password: string): boolean {
   );
 }
 
-export function getCurrentUser(): KumuUser | null {
+export function getCurrentUser(): KumoUser | null {
   if (typeof window === "undefined") return null;
   try {
     const raw = localStorage.getItem(SESSION_KEY);
-    return raw ? (JSON.parse(raw) as KumuUser) : null;
+    return raw ? (JSON.parse(raw) as KumoUser) : null;
   } catch {
     return null;
   }

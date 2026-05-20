@@ -7,8 +7,8 @@ export const Route = createFileRoute("/signup")({
   component: AccessPage,
   head: () => ({
     meta: [
-      { title: "アクセスリクエスト — Kumu Capital" },
-      { name: "description", content: "Kumu Capitalへのアクセスは招待制です。" },
+      { title: "アクセスリクエスト — Kumo Capital" },
+      { name: "description", content: "Kumo Capitalへのアクセスは招待制です。" },
     ],
   }),
 });
@@ -26,7 +26,7 @@ function AccessPage() {
           <span className="grid size-9 place-items-center rounded-full bg-gradient-gold shadow-gold">
             <span className="font-display text-base font-semibold text-primary-foreground">K</span>
           </span>
-          <span className="font-display text-lg tracking-tight">Kumu Capital</span>
+          <span className="font-display text-lg tracking-tight">Kumo Capital</span>
         </Link>
 
         <div className="relative overflow-hidden rounded-[2rem] glass-gold p-10 shadow-elev">
@@ -37,7 +37,7 @@ function AccessPage() {
             </div>
             <h1 className="mt-6 font-display text-3xl tracking-tight">招待制のご案内</h1>
             <p className="mx-auto mt-4 max-w-xs text-sm leading-relaxed text-muted-foreground">
-              Kumu Capitalへのアクセスは招待制です。<br />
+              Kumo Capitalへのアクセスは招待制です。<br />
               アカウントをご希望の場合は、Telegramにてお問い合わせください。
             </p>
 

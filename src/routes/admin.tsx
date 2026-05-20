@@ -7,7 +7,7 @@ import { isAdminLogin } from "@/lib/auth";
 export const Route = createFileRoute("/admin")({
   component: AdminPage,
   head: () => ({
-    meta: [{ title: "Admin — Kumu Capital" }],
+    meta: [{ title: "Admin — Kumo Capital" }],
   }),
 });
 
@@ -36,7 +36,7 @@ function AdminPage() {
             <span className="grid size-12 place-items-center rounded-full bg-gradient-gold shadow-gold">
               <Shield className="size-5 text-primary-foreground" />
             </span>
-            <p className="font-display text-xl tracking-tight">Kumu Capital Admin</p>
+            <p className="font-display text-xl tracking-tight">Kumo Capital Admin</p>
           </div>
           <form onSubmit={handleLogin} className="space-y-4 rounded-3xl glass-gold p-8">
             <div>
@@ -119,7 +119,7 @@ function AdminPanel({ onLogout }: { onLogout: () => void }) {
               <Shield className="size-4 text-primary-foreground" />
             </span>
             <div>
-              <p className="font-display text-base leading-none">Kumu Capital</p>
+              <p className="font-display text-base leading-none">Kumo Capital</p>
               <p className="text-[10px] text-gold">Admin Panel</p>
             </div>
           </div>
@@ -198,7 +198,7 @@ function AdminPanel({ onLogout }: { onLogout: () => void }) {
               />
               <FormField
                 label="パスワード"
-                placeholder="例: kumu2024"
+                placeholder="例: kumo2024"
                 value={form.password}
                 onChange={(v) => setForm((f) => ({ ...f, password: v }))}
               />

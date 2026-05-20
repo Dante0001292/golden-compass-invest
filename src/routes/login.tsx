@@ -10,8 +10,8 @@ export const Route = createFileRoute("/login")({
   component: LoginPage,
   head: () => ({
     meta: [
-      { title: "ログイン — Kumu Capital" },
-      { name: "description", content: "Kumu Capitalアカウントにログインして、ポートフォリオを管理。" },
+      { title: "ログイン — Kumo Capital" },
+      { name: "description", content: "Kumo Capitalアカウントにログインして、ポートフォリオを管理。" },
     ],
   }),
 });
@@ -88,7 +88,7 @@ function LoginPage() {
           <span className="grid size-9 place-items-center rounded-full bg-gradient-gold shadow-gold">
             <span className="font-display text-base font-semibold text-primary-foreground">K</span>
           </span>
-          <span className="font-display text-lg tracking-tight">Kumu Capital</span>
+          <span className="font-display text-lg tracking-tight">Kumo Capital</span>
         </Link>
 
         <div className="relative overflow-hidden rounded-[2rem] glass-gold p-8 shadow-elev md:p-10">
