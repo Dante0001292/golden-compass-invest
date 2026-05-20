@@ -1,8 +1,10 @@
 import { createAPIFileRoute } from '@tanstack/react-start/api';
-import { Redis } from "@upstash/redis";
+import { createClient } from "@supabase/supabase-js";
 import type { KumoUser } from '@/config/users';
 
-const kv = Redis.fromEnv();
+const supabaseUrl = process.env.SUPABASE_URL || "";
+const supabaseKey = process.env.SUPABASE_ANON_KEY || "";
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 // Admin IDs that are allowed to use this bot (You can replace this or fetch from KV)
 const ALLOWED_ADMINS = [
@@ -39,23 +41,38 @@ export const APIRoute = createAPIFileRoute('/api/telegram')({
       const chatId = update.message.chat.id;
       const text = update.message.text.trim();
 
-      // Get current state from KV for this chat
-      const stateKey = `admin_state:${chatId}`;
-      let state: AdminState | null = await kv.get(stateKey);
+      // Get current state from Supabase for this chat
+      const { data: stateRecord } = await supabase
+        .from('telegram_states')
+        .select('*')
+        .eq('chat_id', chatId)
+        .single();
 
-      if (!state) {
-        state = { step: 'idle', draftUser: {} };
-      }
+      let state: AdminState = stateRecord 
+        ? { step: stateRecord.step, draftUser: stateRecord.draft_user || {} } 
+        : { step: 'idle', draftUser: {} };
+
+      const saveState = async (newState: AdminState) => {
+        await supabase.from('telegram_states').upsert({
+          chat_id: chatId,
+          step: newState.step,
+          draft_user: newState.draftUser
+        });
+      };
+
+      const clearState = async () => {
+        await supabase.from('telegram_states').delete().eq('chat_id', chatId);
+      };
 
       if (text === '/cancel') {
-        await kv.del(stateKey);
+        await clearState();
         await sendMessage(chatId, "ユーザー作成をキャンセルしました (User creation cancelled).");
         return new Response("OK");
       }
 
       if (text === '/adduser') {
         state = { step: 'awaiting_username', draftUser: {} };
-        await kv.set(stateKey, state);
+        await saveState(state);
         await sendMessage(chatId, "新しいユーザーを作成します。\nユーザー名を入力してください (Enter username):");
         return new Response("OK");
       }
@@ -65,21 +82,21 @@ export const APIRoute = createAPIFileRoute('/api/telegram')({
         case 'awaiting_username':
           state.draftUser.username = text;
           state.step = 'awaiting_password';
-          await kv.set(stateKey, state);
+          await saveState(state);
           await sendMessage(chatId, `ユーザー名: ${text}\n次に、パスワードを入力してください (Enter password):`);
           break;
           
         case 'awaiting_password':
           state.draftUser.password = text;
           state.step = 'awaiting_name';
-          await kv.set(stateKey, state);
+          await saveState(state);
           await sendMessage(chatId, "パスワードを保存しました。\n次に、フルネーム (表示名) を入力してください (Enter full name):");
           break;
           
         case 'awaiting_name':
           state.draftUser.displayName = text;
           state.step = 'awaiting_balance';
-          await kv.set(stateKey, state);
+          await saveState(state);
           await sendMessage(chatId, `名前: ${text}\n最後に、初期残高を数字で入力してください (Enter initial balance):`);
           break;
           
@@ -92,12 +109,22 @@ export const APIRoute = createAPIFileRoute('/api/telegram')({
           state.draftUser.balance = balance;
           state.draftUser.id = `u_${Date.now()}`;
           
-          // Save the user to KV
-          await kv.hset('users', {
-            [state.draftUser.username!.toLowerCase()]: state.draftUser
+          // Save the user to Supabase
+          const { error: insertError } = await supabase.from('kumo_users').upsert({
+            id: state.draftUser.id,
+            username: state.draftUser.username!.toLowerCase(),
+            display_name: state.draftUser.displayName,
+            password: state.draftUser.password,
+            balance: state.draftUser.balance
           });
+
+          if (insertError) {
+            console.error("Error inserting user", insertError);
+            await sendMessage(chatId, "ユーザーの作成中にエラーが発生しました (Error creating user).");
+            break;
+          }
           
-          await kv.del(stateKey);
+          await clearState();
           await sendMessage(chatId, `✅ ユーザー作成完了 (User created successfully)!\n\n名前: ${state.draftUser.displayName}\nユーザー名: ${state.draftUser.username}\nパスワード: ${state.draftUser.password}\n残高: $${balance.toLocaleString()}`);
           break;
 
