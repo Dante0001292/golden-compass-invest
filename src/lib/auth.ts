@@ -1,14 +1,12 @@
-import { USERS, ADMIN_CREDENTIALS } from "@/config/users";
+import { ADMIN_CREDENTIALS } from "@/config/users";
 import type { KumoUser } from "@/config/users";
 
 const SESSION_KEY = "kumo_session";
 
-export function loginUser(username: string, password: string): KumoUser | null {
-  const user = USERS.find(
-    (u) =>
-      u.username.toLowerCase() === username.toLowerCase() &&
-      u.password === password,
-  );
+import { verifyLogin } from "@/server/auth";
+
+export async function loginUser(username: string, password: string): Promise<KumoUser | null> {
+  const user = await verifyLogin({ data: { username, password } });
   if (user) {
     localStorage.setItem(SESSION_KEY, JSON.stringify(user));
     return user;

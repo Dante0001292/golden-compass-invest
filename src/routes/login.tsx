@@ -37,7 +37,7 @@ function LoginPage() {
     // Small delay for UX feel
     await new Promise((r) => setTimeout(r, 400));
 
-    const user = loginUser(username, password);
+    const user = await loginUser(username, password);
     if (user) {
       navigate({ to: "/dashboard" });
     } else {

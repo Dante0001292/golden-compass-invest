@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowRight, Lock } from "lucide-react";
 import { Particles } from "@/components/landing/Particles";
@@ -14,6 +15,8 @@ export const Route = createFileRoute("/signup")({
 });
 
 function AccessPage() {
+  const [submitted, setSubmitted] = useState(false);
+
   return (
     <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-background px-5 py-12 text-foreground">
       <div className="pointer-events-none fixed inset-x-0 top-0 h-[70vh] bg-[var(--gradient-radial-gold)] opacity-55" />
@@ -29,30 +32,89 @@ function AccessPage() {
           <span className="font-display text-lg tracking-tight">Kumo Capital</span>
         </Link>
 
-        <div className="relative overflow-hidden rounded-[2rem] glass-gold p-10 shadow-elev">
+        <div className="relative overflow-hidden rounded-[2rem] glass-gold p-8 md:p-10 shadow-elev">
           <div className="absolute -right-20 -top-20 size-48 rounded-full bg-gold/15 blur-3xl" />
           <div className="relative">
-            <div className="mx-auto grid size-16 place-items-center rounded-full glass-gold glow-gold">
-              <Lock className="size-7 text-gold" />
-            </div>
-            <h1 className="mt-6 font-display text-3xl tracking-tight">招待制のご案内</h1>
-            <p className="mx-auto mt-4 max-w-xs text-sm leading-relaxed text-muted-foreground">
-              Kumo Capitalへのアクセスは招待制です。<br />
-              アカウントをご希望の場合は、Telegramにてお問い合わせください。
-            </p>
+            {!submitted ? (
+              <>
+                <h1 className="mt-2 font-display text-3xl tracking-tight text-left">新規登録</h1>
+                <p className="mt-2 text-sm text-muted-foreground text-left">
+                  Kumo Capitalのアカウントを作成する
+                </p>
 
-            <a
-              href={TELEGRAM_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="group mt-8 inline-flex w-full items-center justify-center gap-2 rounded-full bg-gradient-gold px-6 py-4 text-base font-medium text-primary-foreground shadow-gold transition hover:scale-[1.02]"
-            >
-              <TelegramIcon />
-              {TELEGRAM_HANDLE} に連絡する
-              <ArrowRight className="size-4 transition group-hover:translate-x-0.5" />
-            </a>
+                <form 
+                  onSubmit={(e) => { e.preventDefault(); setSubmitted(true); }} 
+                  className="mt-8 space-y-4 text-left"
+                >
+                  <label className="block">
+                    <span className="mb-2 block text-xs text-muted-foreground">お名前 (フルネーム)</span>
+                    <div className="group flex items-center gap-3 rounded-2xl glass px-4 py-3 transition focus-within:border-gold/60 focus-within:shadow-gold">
+                      <input
+                        type="text"
+                        required
+                        placeholder="例: 山田 太郎"
+                        className="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground/60"
+                      />
+                    </div>
+                  </label>
 
-            <p className="mt-5 text-[11px] text-muted-foreground">
+                  <label className="block">
+                    <span className="mb-2 block text-xs text-muted-foreground">ユーザー名</span>
+                    <div className="group flex items-center gap-3 rounded-2xl glass px-4 py-3 transition focus-within:border-gold/60 focus-within:shadow-gold">
+                      <input
+                        type="text"
+                        required
+                        placeholder="ユーザー名"
+                        className="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground/60"
+                      />
+                    </div>
+                  </label>
+
+                  <label className="block">
+                    <span className="mb-2 block text-xs text-muted-foreground">パスワード</span>
+                    <div className="group flex items-center gap-3 rounded-2xl glass px-4 py-3 transition focus-within:border-gold/60 focus-within:shadow-gold">
+                      <Lock className="size-4 text-muted-foreground transition group-focus-within:text-gold" />
+                      <input
+                        type="password"
+                        required
+                        placeholder="パスワード"
+                        className="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground/60"
+                      />
+                    </div>
+                  </label>
+
+                  <button
+                    type="submit"
+                    className="group mt-6 flex w-full items-center justify-center gap-2 rounded-full bg-gradient-gold px-6 py-4 text-base font-medium text-primary-foreground shadow-gold transition hover:scale-[1.02]"
+                  >
+                    アカウント作成をリクエスト
+                    <ArrowRight className="size-4 transition group-hover:translate-x-0.5" />
+                  </button>
+                </form>
+              </>
+            ) : (
+              <div className="text-center py-6">
+                <div className="mx-auto grid size-16 place-items-center rounded-full glass-gold glow-gold mb-6">
+                  <Lock className="size-7 text-gold" />
+                </div>
+                <h2 className="font-display text-2xl tracking-tight">リクエスト受付完了</h2>
+                <p className="mt-4 text-sm text-muted-foreground leading-relaxed">
+                  Kumo Capitalへのアクセスは招待制です。<br /><br />
+                  ご登録いただいた情報を基に審査を行います。スムーズな承認のために、Telegramにて管理者までご連絡ください。
+                </p>
+                <a
+                  href={TELEGRAM_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group mt-8 inline-flex w-full items-center justify-center gap-2 rounded-full bg-gradient-gold px-6 py-4 text-base font-medium text-primary-foreground shadow-gold transition hover:scale-[1.02]"
+                >
+                  <TelegramIcon />
+                  {TELEGRAM_HANDLE} に連絡する
+                </a>
+              </div>
+            )}
+
+            <p className="mt-8 text-center text-[11px] text-muted-foreground">
               すでにアカウントをお持ちですか？{" "}
               <Link to="/login" className="text-gold hover:underline">ログイン</Link>
             </p>
