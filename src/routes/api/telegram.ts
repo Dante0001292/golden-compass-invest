@@ -1,4 +1,4 @@
-import { createAPIFileRoute } from '@tanstack/react-start/api';
+import { createFileRoute } from '@tanstack/react-router';
 import { createClient } from "@supabase/supabase-js";
 import type { KumoUser } from '@/config/users';
 
@@ -27,8 +27,10 @@ type AdminState = {
   draftUser: Partial<KumoUser>;
 };
 
-export const APIRoute = createAPIFileRoute('/api/telegram')({
-  POST: async ({ request }) => {
+export const Route = createFileRoute('/api/telegram')({
+  server: {
+    handlers: {
+      POST: async ({ request }) => {
     try {
       const update = await request.json();
       
@@ -149,4 +151,6 @@ export const APIRoute = createAPIFileRoute('/api/telegram')({
       return new Response("Error", { status: 500 });
     }
   }
+}
+}
 });
