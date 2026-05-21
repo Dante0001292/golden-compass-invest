@@ -1,11 +1,17 @@
 import { createServerFn } from "@tanstack/react-start";
+import { createClient } from "@supabase/supabase-js";
 import type { KumoUser } from "@/config/users";
 import { ADMIN_CREDENTIALS } from "@/config/users";
 
 function getSupabase() {
-  const { createClient } = require("@supabase/supabase-js");
-  const supabaseUrl = process.env.SUPABASE_URL || "";
-  const supabaseKey = process.env.SUPABASE_ANON_KEY || "";
+  const supabaseUrl = process.env.SUPABASE_URL;
+  const supabaseKey = process.env.SUPABASE_ANON_KEY;
+  if (!supabaseUrl || !supabaseKey) {
+    throw new Error(
+      "Missing SUPABASE_URL or SUPABASE_ANON_KEY environment variables. " +
+      "Please add them in Vercel → Settings → Environment Variables."
+    );
+  }
   return createClient(supabaseUrl, supabaseKey);
 }
 

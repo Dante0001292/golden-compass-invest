@@ -106,6 +106,7 @@ function AdminPanel({ onLogout }: { onLogout: () => void }) {
   const navigate = useNavigate();
   const [users, setUsers] = useState<KumoUser[]>([]);
   const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<"users" | "add">("users");
 
   // Create user form state
@@ -121,9 +122,16 @@ function AdminPanel({ onLogout }: { onLogout: () => void }) {
 
   async function fetchUsers() {
     setLoading(true);
-    const fetched = await getAllUsers();
-    setUsers(fetched);
-    setLoading(false);
+    setFetchError(null);
+    try {
+      const fetched = await getAllUsers();
+      setUsers(fetched);
+    } catch (err: any) {
+      console.error("fetchUsers error:", err);
+      setFetchError(err?.message || "Failed to load users. Check your Supabase environment variables in Vercel.");
+    } finally {
+      setLoading(false);
+    }
   }
 
   useEffect(() => { fetchUsers(); }, []);
@@ -271,6 +279,15 @@ function AdminPanel({ onLogout }: { onLogout: () => void }) {
                 <div className="px-5 py-12 text-center text-sm text-muted-foreground">
                   <RefreshCw className="mx-auto mb-3 size-5 animate-spin opacity-50" />
                   Loading users…
+                </div>
+              ) : fetchError ? (
+                <div className="px-5 py-12 text-center text-sm">
+                  <XCircle className="mx-auto mb-3 size-6 text-[color:var(--loss)] opacity-70" />
+                  <p className="font-medium text-[color:var(--loss)]">Could not connect to database</p>
+                  <p className="mt-2 text-xs text-muted-foreground max-w-sm mx-auto">{fetchError}</p>
+                  <button onClick={fetchUsers} className="mt-4 rounded-full glass px-4 py-2 text-xs text-muted-foreground hover:text-foreground transition">
+                    Try Again
+                  </button>
                 </div>
               ) : users.length === 0 ? (
                 <div className="px-5 py-12 text-center text-sm text-muted-foreground">
