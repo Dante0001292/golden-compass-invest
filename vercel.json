@@ -1,4 +1,9 @@
 {
   "buildCommand": "npm run build",
-  "framework": null
+  "outputDirectory": "dist/client",
+  "framework": null,
+  "routes": [
+    { "handle": "filesystem" },
+    { "src": "/(.*)", "dest": "/api/ssr" }
+  ]
 }
