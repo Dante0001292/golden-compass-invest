@@ -159,7 +159,7 @@ function AdminPanel({ onLogout }: { onLogout: () => void }) {
 
   async function handleSaveSaltBalance() {
     const bal = parseFloat(siteSaltBalance);
-    if (isNaN(bal) || bal < 0) {
+    if (isNaN(bal)) {
       showToast("error", "Please enter a valid site balance.");
       return;
     }
@@ -180,7 +180,7 @@ function AdminPanel({ onLogout }: { onLogout: () => void }) {
       return;
     }
     const bal = parseFloat(form.balance);
-    if (isNaN(bal) || bal < 0) {
+    if (isNaN(bal)) {
       showToast("error", "Please enter a valid balance.");
       return;
     }
@@ -229,7 +229,7 @@ function AdminPanel({ onLogout }: { onLogout: () => void }) {
   async function handleSaveUserBalance(user: KumoUser) {
     if (!editingUserId) return;
     const bal = parseFloat(editingBalance);
-    if (isNaN(bal) || bal < 0) {
+    if (isNaN(bal)) {
       showToast("error", "Please enter a valid balance.");
       return;
     }
@@ -325,7 +325,6 @@ function AdminPanel({ onLogout }: { onLogout: () => void }) {
                 <label className="mb-1.5 block text-xs text-muted-foreground">Current salt balance (¥)</label>
                 <input
                   type="number"
-                  min="0"
                   value={siteSaltBalance}
                   onChange={(e) => setSiteSaltBalance(e.target.value)}
                   className="w-full rounded-2xl glass px-4 py-3 text-sm outline-none placeholder:text-muted-foreground/50 focus:border-gold/60"
@@ -411,7 +410,6 @@ function AdminPanel({ onLogout }: { onLogout: () => void }) {
                       {isEditing ? (
                         <input
                           type="number"
-                          min="0"
                           value={editingBalance}
                           onChange={(e) => setEditingBalance(e.target.value)}
                           className="w-full rounded-2xl glass px-3 py-2 text-sm outline-none placeholder:text-muted-foreground/50 focus:border-gold/60"
@@ -525,7 +523,6 @@ function AdminPanel({ onLogout }: { onLogout: () => void }) {
                 <label className="mb-1.5 block text-xs text-muted-foreground">Initial Balance (¥) <span className="text-[color:var(--loss)]">*</span></label>
                 <input
                   type="number"
-                  min="0"
                   value={form.balance}
                   onChange={(e) => setForm((f) => ({ ...f, balance: e.target.value }))}
                   placeholder="e.g. 1000000"

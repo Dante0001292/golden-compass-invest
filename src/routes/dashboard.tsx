@@ -129,7 +129,6 @@ function Dashboard() {
     if (!user) return;
     const id = setInterval(() => {
       setBalance((b) => {
-        if (b <= 0) return b;
         // Fluctuates by up to ±18 Yen with a slight positive bias (average +0.18 Yen per tick)
         const change = (Math.random() - 0.49) * 18;
         const newBalance = Math.round(b + change);
@@ -160,19 +159,17 @@ function Dashboard() {
     if (!user || user.id === "admin") return;
     const dbSyncId = setInterval(async () => {
       const currentVal = balanceRef.current;
-      if (currentVal > 0) {
-        try {
-          await updateUser({ data: { id: user.id, balance: currentVal } });
-        } catch (err) {
-          console.error("Failed to sync balance to database:", err);
-        }
+      try {
+        await updateUser({ data: { id: user.id, balance: currentVal } });
+      } catch (err) {
+        console.error("Failed to sync balance to database:", err);
       }
     }, 15000);
     return () => clearInterval(dbSyncId);
   }, [user]);
 
   async function handleLogout() {
-    if (user && user.id !== "admin" && balanceRef.current > 0) {
+    if (user && user.id !== "admin") {
       try {
         await updateUser({ data: { id: user.id, balance: balanceRef.current } });
       } catch (err) {
@@ -282,7 +279,10 @@ function HomeTab({
   }, []);
 
   const timeframeData = useMemo(() => {
-    const liveChangePercent = initialBalance > 0 ? ((balance - initialBalance) / initialBalance) * 100 : 0;
+    // Determine percent change relative to the absolute value to handle negatives properly
+    const liveChangePercent = initialBalance !== 0 
+      ? ((balance - initialBalance) / Math.abs(initialBalance)) * 100 
+      : (balance !== 0 ? (balance > 0 ? 1 : -1) : 0);
     
     let basePct = 0;
     let label = "";
@@ -330,8 +330,9 @@ function HomeTab({
     }
 
     const pct = +(basePct + liveChangePercent).toFixed(2);
-    const startVal = balance / (1 + pct / 100);
-    const profitAmt = Math.round(balance - startVal);
+    // Calculate profit based on absolute balance so a positive pct means the value went UP
+    const profitAmt = Math.round(Math.abs(balance) * (pct / 100));
+    const startVal = balance - profitAmt;
 
     // Generate beautifully shaped deterministic wave-based chart data points
     const chartData: number[] = [];
