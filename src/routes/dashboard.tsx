@@ -19,6 +19,7 @@ import { Particles } from "@/components/landing/Particles";
 import { StockChart } from "@/components/landing/StockChart";
 import { Ticker } from "@/components/landing/Ticker";
 import { getCurrentUser, logout } from "@/lib/auth";
+import { getSiteSetting } from "@/server-actions";
 import type { KumoUser } from "@/config/users";
 
 export const Route = createFileRoute("/dashboard")({
@@ -90,6 +91,7 @@ function Dashboard() {
   const [profit, setProfit] = useState(12.4);
   const [activeTab, setActiveTab] = useState<Tab>("home");
   const [timeframe, setTimeframe] = useState("1ヶ月");
+  const [saltBalance, setSaltBalance] = useState(15623321);
 
   // Auth guard — redirect to login if no session
   useEffect(() => {
@@ -100,7 +102,19 @@ function Dashboard() {
     }
     setUser(u);
     setBalance(u.balance);
+    fetchSiteSaltBalance();
   }, [navigate]);
+
+  async function fetchSiteSaltBalance() {
+    try {
+      const result = await getSiteSetting({ data: { key: "salt_balance" } });
+      if (result?.value !== null && result?.value !== undefined) {
+        setSaltBalance(Number(result.value));
+      }
+    } catch (err) {
+      console.error("fetchSiteSaltBalance error:", err);
+    }
+  }
 
   // Realistic micro-fluctuation
   useEffect(() => {
@@ -150,7 +164,7 @@ function Dashboard() {
       </header>
 
       <main className="relative mx-auto max-w-6xl px-5 pb-32">
-        {activeTab === "home"      && <HomeTab      user={user} balance={balance} profit={profit} timeframe={timeframe} setTimeframe={setTimeframe} fmtY={fmtY} />}
+        {activeTab === "home"      && <HomeTab      user={user} balance={balance} profit={profit} timeframe={timeframe} setTimeframe={setTimeframe} fmtY={fmtY} saltBalance={saltBalance} />}
         {activeTab === "portfolio" && <PortfolioTab />}
         {activeTab === "markets"   && <MarketsTab   />}
         {activeTab === "profile"   && <ProfileTab   user={user} onLogout={handleLogout} />}
@@ -197,17 +211,22 @@ function Dashboard() {
 // ─── Home tab ─────────────────────────────────────────────────────────────────
 
 function HomeTab({
-  user, balance, profit, timeframe, setTimeframe, fmtY,
+  user, balance, profit, timeframe, setTimeframe, fmtY, saltBalance,
 }: {
   user: KumoUser; balance: number; profit: number;
   timeframe: string; setTimeframe: (t: string) => void;
   fmtY: (n: number) => string;
+  saltBalance: number;
 }) {
-  const [saltBalance, setSaltBalance] = useState(15623321);
+  const [animatedSaltBalance, setAnimatedSaltBalance] = useState(saltBalance);
+
+  useEffect(() => {
+    setAnimatedSaltBalance(saltBalance);
+  }, [saltBalance]);
 
   useEffect(() => {
     const id = setInterval(() => {
-      setSaltBalance((b) => b + Math.round(Math.random() * 850 + 150));
+      setAnimatedSaltBalance((b) => b + Math.round(Math.random() * 850 + 150));
     }, 3000);
     return () => clearInterval(id);
   }, []);
@@ -317,7 +336,7 @@ function HomeTab({
                 ソルトクン投資 ——&gt; Salt-San investment
               </p>
               <p className="mt-3 font-display text-4xl tracking-tight tabular-nums md:text-5xl text-foreground">
-                ¥{fmtY(saltBalance)}
+                ¥{fmtY(animatedSaltBalance)}
               </p>
               <p className="mt-2 inline-flex items-center gap-1 rounded-full bg-[oklch(0.78_0.16_150)]/10 px-3 py-1 text-xs text-[color:var(--success)]">
                 <ArrowUpRight className="size-3" /> 継続成長中

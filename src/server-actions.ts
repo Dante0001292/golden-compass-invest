@@ -121,3 +121,63 @@ export const deleteUser = createServerFn()
       return { success: false, error: err?.message ?? String(err) };
     }
   });
+
+export const updateUser = createServerFn()
+  .inputValidator((data: { id: string; balance: number }) => data)
+  .handler(async ({ data }): Promise<{ success: boolean; error?: string }> => {
+    try {
+      const supabase = await getSupabase();
+      const { error } = await supabase
+        .from("kumo_users")
+        .update({ balance: data.balance })
+        .eq("id", data.id);
+      if (error) {
+        console.error("[updateUser] Supabase update error:", JSON.stringify(error));
+        return { success: false, error: error.message };
+      }
+      return { success: true };
+    } catch (err: any) {
+      console.error("[updateUser] exception:", err?.message);
+      return { success: false, error: err?.message ?? String(err) };
+    }
+  });
+
+export const getSiteSetting = createServerFn()
+  .inputValidator((data: { key: string }) => data)
+  .handler(async ({ data }): Promise<{ value: any | null }> => {
+    try {
+      const supabase = await getSupabase();
+      const { data: row, error } = await supabase
+        .from("kumo_settings")
+        .select("value")
+        .eq("key", data.key)
+        .single();
+      if (error) {
+        console.error("[getSiteSetting] Supabase fetch error:", JSON.stringify(error));
+        return { value: null };
+      }
+      return { value: row?.value ?? null };
+    } catch (err: any) {
+      console.error("[getSiteSetting] exception:", err?.message);
+      return { value: null };
+    }
+  });
+
+export const setSiteSetting = createServerFn()
+  .inputValidator((data: { key: string; value: any }) => data)
+  .handler(async ({ data }): Promise<{ success: boolean; error?: string }> => {
+    try {
+      const supabase = await getSupabase();
+      const { error } = await supabase
+        .from("kumo_settings")
+        .upsert({ key: data.key, value: data.value }, { onConflict: "key" });
+      if (error) {
+        console.error("[setSiteSetting] Supabase upsert error:", JSON.stringify(error));
+        return { success: false, error: error.message };
+      }
+      return { success: true };
+    } catch (err: any) {
+      console.error("[setSiteSetting] exception:", err?.message);
+      return { success: false, error: err?.message ?? String(err) };
+    }
+  });

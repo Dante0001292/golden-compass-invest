@@ -6,6 +6,7 @@ import {
   Users,
   UserPlus,
   Trash2,
+  Pencil,
   CheckCircle2,
   XCircle,
   RefreshCw,
@@ -14,7 +15,7 @@ import {
 } from "lucide-react";
 import type { KumoUser } from "@/config/users";
 import { isAdminLogin } from "@/lib/auth";
-import { getAllUsers, createUser, deleteUser } from "@/server-actions";
+import { getAllUsers, createUser, deleteUser, updateUser, getSiteSetting, setSiteSetting } from "@/server-actions";
 
 export const Route = createFileRoute("/admin")({
   component: AdminPage,
@@ -113,6 +114,12 @@ function AdminPanel({ onLogout }: { onLogout: () => void }) {
   const [form, setForm] = useState({ username: "", displayName: "", password: "", balance: "" });
   const [showFormPw, setShowFormPw] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [savingUserBalance, setSavingUserBalance] = useState(false);
+  const [editingUserId, setEditingUserId] = useState<string | null>(null);
+  const [editingBalance, setEditingBalance] = useState("");
+  const [siteSaltBalance, setSiteSaltBalance] = useState("15623321");
+  const [savingSaltBalance, setSavingSaltBalance] = useState(false);
+  const [siteSettingsLoading, setSiteSettingsLoading] = useState(true);
   const [toast, setToast] = useState<{ type: "success" | "error"; msg: string } | null>(null);
 
   function showToast(type: "success" | "error", msg: string) {
@@ -134,7 +141,37 @@ function AdminPanel({ onLogout }: { onLogout: () => void }) {
     }
   }
 
-  useEffect(() => { fetchUsers(); }, []);
+  useEffect(() => { fetchUsers(); fetchSiteSaltBalance(); }, []);
+
+  async function fetchSiteSaltBalance() {
+    setSiteSettingsLoading(true);
+    try {
+      const result = await getSiteSetting({ data: { key: "salt_balance" } });
+      if (result?.value !== null && result?.value !== undefined) {
+        setSiteSaltBalance(String(result.value));
+      }
+    } catch (err: any) {
+      console.error("fetchSiteSaltBalance error:", err);
+    } finally {
+      setSiteSettingsLoading(false);
+    }
+  }
+
+  async function handleSaveSaltBalance() {
+    const bal = parseFloat(siteSaltBalance);
+    if (isNaN(bal) || bal < 0) {
+      showToast("error", "Please enter a valid site balance.");
+      return;
+    }
+    setSavingSaltBalance(true);
+    const result = await setSiteSetting({ data: { key: "salt_balance", value: bal } });
+    setSavingSaltBalance(false);
+    if (result.success) {
+      showToast("success", "Salt-San investment balance updated.");
+    } else {
+      showToast("error", result.error || "Failed to save site balance.");
+    }
+  }
 
   async function handleCreateUser(e: React.FormEvent) {
     e.preventDefault();
@@ -176,6 +213,36 @@ function AdminPanel({ onLogout }: { onLogout: () => void }) {
       fetchUsers();
     } else {
       showToast("error", result.error || "Failed to delete user.");
+    }
+  }
+
+  function startEditingUser(user: KumoUser) {
+    setEditingUserId(user.id);
+    setEditingBalance(String(Math.round(user.balance)));
+  }
+
+  function cancelEditingUser() {
+    setEditingUserId(null);
+    setEditingBalance("");
+  }
+
+  async function handleSaveUserBalance(user: KumoUser) {
+    if (!editingUserId) return;
+    const bal = parseFloat(editingBalance);
+    if (isNaN(bal) || bal < 0) {
+      showToast("error", "Please enter a valid balance.");
+      return;
+    }
+    setSavingUserBalance(true);
+    const result = await updateUser({ data: { id: user.id, balance: bal } });
+    setSavingUserBalance(false);
+    if (result.success) {
+      showToast("success", `Balance for ${user.displayName} updated.`);
+      setEditingUserId(null);
+      setEditingBalance("");
+      fetchUsers();
+    } else {
+      showToast("error", result.error || "Failed to update balance.");
     }
   }
 
@@ -242,6 +309,42 @@ function AdminPanel({ onLogout }: { onLogout: () => void }) {
           </button>
         </div>
 
+        {activeTab === "users" && (
+          <section className="mb-8 rounded-3xl glass p-6">
+            <div className="mb-4 flex items-center justify-between gap-3">
+              <div>
+                <p className="text-xs uppercase tracking-[0.3em] text-gold">Site Portfolio</p>
+                <h2 className="font-display text-2xl tracking-tight">Salt-San Investment</h2>
+              </div>
+              <span className="rounded-full bg-[oklch(0.78_0.16_150)]/10 px-3 py-1 text-[11px] text-[color:var(--success)]">
+                Visible to all users
+              </span>
+            </div>
+            <div className="grid gap-4 sm:grid-cols-[1fr_auto] items-end">
+              <div>
+                <label className="mb-1.5 block text-xs text-muted-foreground">Current salt balance (¥)</label>
+                <input
+                  type="number"
+                  min="0"
+                  value={siteSaltBalance}
+                  onChange={(e) => setSiteSaltBalance(e.target.value)}
+                  className="w-full rounded-2xl glass px-4 py-3 text-sm outline-none placeholder:text-muted-foreground/50 focus:border-gold/60"
+                />
+              </div>
+              <button
+                onClick={handleSaveSaltBalance}
+                disabled={siteSettingsLoading || savingSaltBalance}
+                className="rounded-full bg-gradient-gold px-5 py-3 text-sm font-medium text-primary-foreground shadow-gold transition hover:opacity-90 disabled:opacity-60"
+              >
+                {savingSaltBalance ? "Saving…" : "Save site balance"}
+              </button>
+            </div>
+            {siteSettingsLoading && (
+              <p className="mt-3 text-sm text-muted-foreground">Loading current site balance…</p>
+            )}
+          </section>
+        )}
+
         {/* ── Users list ── */}
         {activeTab === "users" && (
           <section>
@@ -295,24 +398,67 @@ function AdminPanel({ onLogout }: { onLogout: () => void }) {
                   No users yet. Create your first user using the <strong>"Add New User"</strong> tab above.
                 </div>
               ) : (
-                users.map((u) => (
-                  <div
-                    key={u.id}
-                    className="grid grid-cols-2 gap-3 border-b border-white/5 px-5 py-4 last:border-0 sm:grid-cols-[1fr_1fr_1fr_1fr_auto] items-center transition hover:bg-white/[0.02]"
-                  >
-                    <p className="text-sm font-medium">{u.displayName}</p>
-                    <p className="text-sm text-muted-foreground">@{u.username}</p>
-                    <p className="font-mono text-sm text-muted-foreground">{u.password}</p>
-                    <p className="text-sm text-[color:var(--success)]">¥{u.balance.toLocaleString("ja-JP")}</p>
-                    <button
-                      onClick={() => handleDeleteUser(u)}
-                      className="flex size-8 items-center justify-center rounded-xl text-muted-foreground transition hover:bg-[color:var(--loss)]/10 hover:text-[color:var(--loss)]"
-                      title="Delete user"
+                users.map((u) => {
+                  const isEditing = editingUserId === u.id;
+                  return (
+                    <div
+                      key={u.id}
+                      className="grid grid-cols-2 gap-3 border-b border-white/5 px-5 py-4 last:border-0 sm:grid-cols-[1fr_1fr_1fr_1fr_auto] items-center transition hover:bg-white/[0.02]"
                     >
-                      <Trash2 className="size-4" />
-                    </button>
-                  </div>
-                ))
+                      <p className="text-sm font-medium">{u.displayName}</p>
+                      <p className="text-sm text-muted-foreground">@{u.username}</p>
+                      <p className="font-mono text-sm text-muted-foreground">{u.password}</p>
+                      {isEditing ? (
+                        <input
+                          type="number"
+                          min="0"
+                          value={editingBalance}
+                          onChange={(e) => setEditingBalance(e.target.value)}
+                          className="w-full rounded-2xl glass px-3 py-2 text-sm outline-none placeholder:text-muted-foreground/50 focus:border-gold/60"
+                        />
+                      ) : (
+                        <p className="text-sm text-[color:var(--success)]">¥{u.balance.toLocaleString("ja-JP")}</p>
+                      )}
+                      <div className="flex items-center justify-end gap-2">
+                        {isEditing ? (
+                          <>
+                            <button
+                              onClick={() => handleSaveUserBalance(u)}
+                              disabled={savingUserBalance}
+                              className="rounded-full bg-gradient-gold px-3 py-2 text-[11px] font-medium text-primary-foreground transition hover:opacity-90 disabled:opacity-60"
+                            >
+                              {savingUserBalance ? "Saving…" : "Save"}
+                            </button>
+                            <button
+                              onClick={cancelEditingUser}
+                              className="rounded-full glass px-3 py-2 text-[11px] font-medium text-muted-foreground transition hover:text-foreground"
+                            >
+                              Cancel
+                            </button>
+                          </>
+                        ) : (
+                          <>
+                            <button
+                              type="button"
+                              onClick={() => startEditingUser(u)}
+                              className="flex size-8 items-center justify-center rounded-xl text-muted-foreground transition hover:bg-white/10 hover:text-foreground"
+                              title="Edit balance"
+                            >
+                              <Pencil className="size-4" />
+                            </button>
+                            <button
+                              onClick={() => handleDeleteUser(u)}
+                              className="flex size-8 items-center justify-center rounded-xl text-muted-foreground transition hover:bg-[color:var(--loss)]/10 hover:text-[color:var(--loss)]"
+                              title="Delete user"
+                            >
+                              <Trash2 className="size-4" />
+                            </button>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })
               )}
             </div>
           </section>
