@@ -6,7 +6,13 @@ const SESSION_KEY = "kumo_session";
 import { verifyLogin } from "@/server-actions";
 
 export async function loginUser(username: string, password: string): Promise<KumoUser | null> {
-  const user = await verifyLogin({ data: { username, password } });
+  const normalizedUsername = username.trim().toLowerCase();
+  const normalizedPassword = password.trim();
+  console.log("[auth] loginUser", {
+    username: normalizedUsername,
+    passwordLength: normalizedPassword.length,
+  });
+  const user = await verifyLogin({ data: { username: normalizedUsername, password: normalizedPassword } });
   if (user) {
     localStorage.setItem(SESSION_KEY, JSON.stringify(user));
     return user;

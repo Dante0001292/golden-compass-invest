@@ -187,9 +187,9 @@ function AdminPanel({ onLogout }: { onLogout: () => void }) {
     setSubmitting(true);
     const result = await createUser({
       data: {
-        username: form.username,
-        displayName: form.displayName,
-        password: form.password,
+        username: form.username.trim().toLowerCase(),
+        displayName: form.displayName.trim(),
+        password: form.password.trim(),
         balance: bal,
       },
     });

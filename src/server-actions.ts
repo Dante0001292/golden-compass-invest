@@ -17,12 +17,15 @@ async function getSupabase() {
 export const verifyLogin = createServerFn()
   .inputValidator((data: { username: string; password: string }) => data)
   .handler(async ({ data }): Promise<KumoUser | null> => {
-    const { username, password } = data;
+    const username = data.username.trim().toLowerCase();
+    const password = data.password.trim();
+    console.log("[verifyLogin] request", { username, passwordLength: password.length });
 
     if (
       username === ADMIN_CREDENTIALS.username &&
       password === ADMIN_CREDENTIALS.password
     ) {
+      console.log("[verifyLogin] admin login success", { username });
       return {
         id: "admin",
         username: "admin",
@@ -37,15 +40,24 @@ export const verifyLogin = createServerFn()
       const { data: row, error } = await supabase
         .from("kumo_users")
         .select("*")
-        .eq("username", username.toLowerCase())
-        .single();
+        .eq("username", username)
+        .maybeSingle();
 
       if (error) {
         console.error("Supabase fetch error:", error);
         return null;
       }
 
-      if (row && row.password === password) {
+      if (row) {
+        console.log("[verifyLogin] row fetched", {
+          rowId: row.id,
+          rowUsername: row.username,
+          rowPasswordLength: String(row.password).trim().length,
+          rowBalance: row.balance,
+        });
+      }
+      if (row && String(row.password).trim() === password) {
+        console.log("[verifyLogin] user login success", { username });
         return {
           id: row.id,
           username: row.username,
@@ -54,6 +66,7 @@ export const verifyLogin = createServerFn()
           balance: row.balance,
         };
       }
+      console.log("[verifyLogin] login mismatch", { username, expectedPasswordLength: row ? String(row.password).trim().length : null });
       return null;
     } catch (error) {
       console.error("Supabase exception:", error);
@@ -86,7 +99,12 @@ export const getAllUsers = createServerFn()
 export const createUser = createServerFn()
   .inputValidator((data: { username: string; displayName: string; password: string; balance: number }) => data)
   .handler(async ({ data }): Promise<{ success: boolean; error?: string }> => {
-    console.log("[createUser] called with:", JSON.stringify(data));
+    console.log("[createUser] called with:", JSON.stringify({
+      username: data.username,
+      displayName: data.displayName,
+      passwordLength: data.password.length,
+      balance: data.balance,
+    }));
     try {
       const supabase = await getSupabase();
       const id = `u_${Date.now()}`;

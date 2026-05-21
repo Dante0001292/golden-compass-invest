@@ -31,16 +31,25 @@ function LoginPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    const normalizedUsername = username.trim();
+    const normalizedPassword = password.trim();
+    console.log("[login] attempt", {
+      username: normalizedUsername,
+      passwordLength: normalizedPassword.length,
+    });
+
     setError("");
     setLoading(true);
 
     // Small delay for UX feel
     await new Promise((r) => setTimeout(r, 400));
 
-    const user = await loginUser(username, password);
+    const user = await loginUser(normalizedUsername, normalizedPassword);
     if (user) {
+      console.log("[login] success", { username: normalizedUsername });
       navigate({ to: "/dashboard" });
     } else {
+      console.log("[login] failed", { username: normalizedUsername });
       setError("ユーザー名またはパスワードが正しくありません");
       setLoading(false);
     }
