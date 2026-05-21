@@ -80,3 +80,48 @@ export const getAllUsers = createServerFn(
     }
   }
 );
+
+export const createUser = createServerFn(
+  "POST",
+  async (payload: {
+    username: string;
+    displayName: string;
+    password: string;
+    balance: number;
+  }): Promise<{ success: boolean; error?: string }> => {
+    try {
+      const supabase = getSupabase();
+      const id = `u_${Date.now()}`;
+      const { error } = await supabase.from("kumo_users").insert({
+        id,
+        username: payload.username.toLowerCase().trim(),
+        display_name: payload.displayName.trim(),
+        password: payload.password,
+        balance: payload.balance,
+      });
+      if (error) {
+        console.error("Supabase insert error:", error);
+        return { success: false, error: error.message };
+      }
+      return { success: true };
+    } catch (err: any) {
+      console.error("createUser exception:", err);
+      return { success: false, error: err.message };
+    }
+  }
+);
+
+export const deleteUser = createServerFn(
+  "POST",
+  async (payload: { id: string }): Promise<{ success: boolean; error?: string }> => {
+    try {
+      const supabase = getSupabase();
+      const { error } = await supabase.from("kumo_users").delete().eq("id", payload.id);
+      if (error) return { success: false, error: error.message };
+      return { success: true };
+    } catch (err: any) {
+      return { success: false, error: err.message };
+    }
+  }
+);
+
