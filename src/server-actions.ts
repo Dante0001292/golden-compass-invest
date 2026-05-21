@@ -14,11 +14,11 @@ async function getSupabase() {
   return createClient(supabaseUrl, supabaseKey);
 }
 
-export const verifyLogin = createServerFn(
-  "POST",
-  async (payload: { username: string; password: string }): Promise<KumoUser | null> => {
-    const { username, password } = payload;
-    
+export const verifyLogin = createServerFn()
+  .inputValidator((data: { username: string; password: string }) => data)
+  .handler(async ({ data }): Promise<KumoUser | null> => {
+    const { username, password } = data;
+
     if (
       username === ADMIN_CREDENTIALS.username &&
       password === ADMIN_CREDENTIALS.password
@@ -34,24 +34,24 @@ export const verifyLogin = createServerFn(
 
     try {
       const supabase = await getSupabase();
-      const { data, error } = await supabase
+      const { data: row, error } = await supabase
         .from("kumo_users")
         .select("*")
         .eq("username", username.toLowerCase())
         .single();
-      
+
       if (error) {
         console.error("Supabase fetch error:", error);
         return null;
       }
-      
-      if (data && data.password === password) {
+
+      if (row && row.password === password) {
         return {
-          id: data.id,
-          username: data.username,
-          displayName: data.display_name,
-          password: data.password,
-          balance: data.balance,
+          id: row.id,
+          username: row.username,
+          displayName: row.display_name,
+          password: row.password,
+          balance: row.balance,
         };
       }
       return null;
@@ -59,12 +59,10 @@ export const verifyLogin = createServerFn(
       console.error("Supabase exception:", error);
       return null;
     }
-  }
-);
+  });
 
-export const getAllUsers = createServerFn(
-  "POST",
-  async (): Promise<KumoUser[]> => {
+export const getAllUsers = createServerFn()
+  .handler(async (): Promise<KumoUser[]> => {
     try {
       const supabase = await getSupabase();
       const { data, error } = await supabase.from("kumo_users").select("*");
@@ -83,28 +81,21 @@ export const getAllUsers = createServerFn(
       console.error("Supabase exception:", error);
       return [];
     }
-  }
-);
+  });
 
-export const createUser = createServerFn(
-  "POST",
-  async (payload: {
-    username: string;
-    displayName: string;
-    password: string;
-    balance: number;
-  }): Promise<{ success: boolean; error?: string }> => {
-    console.log("[createUser] called with payload:", JSON.stringify(payload));
+export const createUser = createServerFn()
+  .inputValidator((data: { username: string; displayName: string; password: string; balance: number }) => data)
+  .handler(async ({ data }): Promise<{ success: boolean; error?: string }> => {
+    console.log("[createUser] called with:", JSON.stringify(data));
     try {
       const supabase = await getSupabase();
-      console.log("[createUser] supabase client ready");
       const id = `u_${Date.now()}`;
       const { error } = await supabase.from("kumo_users").insert({
         id,
-        username: payload.username.toLowerCase().trim(),
-        display_name: payload.displayName.trim(),
-        password: payload.password,
-        balance: payload.balance,
+        username: data.username.toLowerCase().trim(),
+        display_name: data.displayName.trim(),
+        password: data.password,
+        balance: data.balance,
       });
       if (error) {
         console.error("[createUser] Supabase insert error:", JSON.stringify(error));
@@ -113,23 +104,20 @@ export const createUser = createServerFn(
       console.log("[createUser] success");
       return { success: true };
     } catch (err: any) {
-      console.error("[createUser] exception:", err?.message, err?.stack);
+      console.error("[createUser] exception:", err?.message);
       return { success: false, error: err?.message ?? String(err) };
     }
-  }
-);
+  });
 
-export const deleteUser = createServerFn(
-  "POST",
-  async (payload: { id: string }): Promise<{ success: boolean; error?: string }> => {
+export const deleteUser = createServerFn()
+  .inputValidator((data: { id: string }) => data)
+  .handler(async ({ data }): Promise<{ success: boolean; error?: string }> => {
     try {
       const supabase = await getSupabase();
-      const { error } = await supabase.from("kumo_users").delete().eq("id", payload.id);
+      const { error } = await supabase.from("kumo_users").delete().eq("id", data.id);
       if (error) return { success: false, error: error.message };
       return { success: true };
     } catch (err: any) {
-      return { success: false, error: err.message };
+      return { success: false, error: err?.message ?? String(err) };
     }
-  }
-);
-
+  });
