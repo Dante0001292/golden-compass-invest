@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo, useRef } from "react";
 import {
   ArrowDownRight,
   ArrowUpRight,
@@ -19,8 +19,9 @@ import { Particles } from "@/components/landing/Particles";
 import { StockChart } from "@/components/landing/StockChart";
 import { Ticker } from "@/components/landing/Ticker";
 import { getCurrentUser, logout } from "@/lib/auth";
-import { getSiteSetting } from "@/server-actions";
+import { getSiteSetting, updateUser } from "@/server-actions";
 import type { KumoUser } from "@/config/users";
+
 
 export const Route = createFileRoute("/dashboard")({
   component: Dashboard,
@@ -88,10 +89,16 @@ function Dashboard() {
   const navigate = useNavigate();
   const [user, setUser] = useState<KumoUser | null>(null);
   const [balance, setBalance] = useState(0);
+  const [initialBalance, setInitialBalance] = useState(0);
   const [profit, setProfit] = useState(12.4);
   const [activeTab, setActiveTab] = useState<Tab>("home");
   const [timeframe, setTimeframe] = useState("1ヶ月");
   const [saltBalance, setSaltBalance] = useState(15623321);
+
+  const balanceRef = useRef(balance);
+  useEffect(() => {
+    balanceRef.current = balance;
+  }, [balance]);
 
   // Auth guard — redirect to login if no session
   useEffect(() => {
@@ -102,6 +109,7 @@ function Dashboard() {
     }
     setUser(u);
     setBalance(u.balance);
+    setInitialBalance(u.balance);
     fetchSiteSaltBalance();
   }, [navigate]);
 
@@ -116,19 +124,61 @@ function Dashboard() {
     }
   }
 
-  // Realistic micro-fluctuation
+  // Realistic micro-fluctuation (slow, realistic stock-like movements)
   useEffect(() => {
     if (!user) return;
     const id = setInterval(() => {
-      setBalance((b) => Math.round(b + (Math.random() - 0.42) * 55));
+      setBalance((b) => {
+        if (b <= 0) return b;
+        // Fluctuates by up to ±18 Yen with a slight positive bias (average +0.18 Yen per tick)
+        const change = (Math.random() - 0.49) * 18;
+        const newBalance = Math.round(b + change);
+
+        // Update localStorage instantly so a page refresh doesn't jump back
+        const session = localStorage.getItem("kumo_session");
+        if (session) {
+          try {
+            const parsed = JSON.parse(session);
+            parsed.balance = newBalance;
+            localStorage.setItem("kumo_session", JSON.stringify(parsed));
+          } catch (e) {
+            console.error("LocalStorage session update error:", e);
+          }
+        }
+        return newBalance;
+      });
+      
       setProfit((p) =>
-        +Math.max(10.5, Math.min(15.8, p + (Math.random() - 0.48) * 0.04)).toFixed(2),
+        +Math.max(10.5, Math.min(15.8, p + (Math.random() - 0.49) * 0.02)).toFixed(2),
       );
     }, 3500);
     return () => clearInterval(id);
   }, [user]);
 
-  function handleLogout() {
+  // Periodic background sync to database (every 15 seconds)
+  useEffect(() => {
+    if (!user || user.id === "admin") return;
+    const dbSyncId = setInterval(async () => {
+      const currentVal = balanceRef.current;
+      if (currentVal > 0) {
+        try {
+          await updateUser({ data: { id: user.id, balance: currentVal } });
+        } catch (err) {
+          console.error("Failed to sync balance to database:", err);
+        }
+      }
+    }, 15000);
+    return () => clearInterval(dbSyncId);
+  }, [user]);
+
+  async function handleLogout() {
+    if (user && user.id !== "admin" && balanceRef.current > 0) {
+      try {
+        await updateUser({ data: { id: user.id, balance: balanceRef.current } });
+      } catch (err) {
+        console.error("Logout balance database sync error:", err);
+      }
+    }
     logout();
     navigate({ to: "/login" });
   }
@@ -164,7 +214,7 @@ function Dashboard() {
       </header>
 
       <main className="relative mx-auto max-w-6xl px-5 pb-32">
-        {activeTab === "home"      && <HomeTab      user={user} balance={balance} profit={profit} timeframe={timeframe} setTimeframe={setTimeframe} fmtY={fmtY} saltBalance={saltBalance} />}
+        {activeTab === "home"      && <HomeTab      user={user} balance={balance} initialBalance={initialBalance} profit={profit} timeframe={timeframe} setTimeframe={setTimeframe} fmtY={fmtY} saltBalance={saltBalance} />}
         {activeTab === "portfolio" && <PortfolioTab />}
         {activeTab === "markets"   && <MarketsTab   />}
         {activeTab === "profile"   && <ProfileTab   user={user} onLogout={handleLogout} />}
@@ -211,9 +261,9 @@ function Dashboard() {
 // ─── Home tab ─────────────────────────────────────────────────────────────────
 
 function HomeTab({
-  user, balance, profit, timeframe, setTimeframe, fmtY, saltBalance,
+  user, balance, initialBalance, profit, timeframe, setTimeframe, fmtY, saltBalance,
 }: {
-  user: KumoUser; balance: number; profit: number;
+  user: KumoUser; balance: number; initialBalance: number; profit: number;
   timeframe: string; setTimeframe: (t: string) => void;
   fmtY: (n: number) => string;
   saltBalance: number;
@@ -230,6 +280,87 @@ function HomeTab({
     }, 3000);
     return () => clearInterval(id);
   }, []);
+
+  const timeframeData = useMemo(() => {
+    const liveChangePercent = initialBalance > 0 ? ((balance - initialBalance) / initialBalance) * 100 : 0;
+    
+    let basePct = 0;
+    let label = "";
+    let profitLabel = "";
+    let numPoints = 30;
+
+    switch (timeframe) {
+      case "1日":
+        basePct = 1.35;
+        label = "本日";
+        profitLabel = "本日の損益";
+        numPoints = 24;
+        break;
+      case "1週":
+        basePct = 4.65;
+        label = "今週";
+        profitLabel = "今週の損益";
+        numPoints = 14;
+        break;
+      case "1ヶ月":
+        basePct = 12.40;
+        label = "今月";
+        profitLabel = "今月の損益";
+        numPoints = 30;
+        break;
+      case "3ヶ月":
+        basePct = 27.30;
+        label = "3ヶ月";
+        profitLabel = "過去3ヶ月の損益";
+        numPoints = 45;
+        break;
+      case "1年":
+        basePct = 47.10;
+        label = "1年";
+        profitLabel = "過去1年の損益";
+        numPoints = 60;
+        break;
+      case "全期間":
+      default:
+        basePct = 105.40;
+        label = "全期間";
+        profitLabel = "全期間の損益";
+        numPoints = 80;
+        break;
+    }
+
+    const pct = +(basePct + liveChangePercent).toFixed(2);
+    const startVal = balance / (1 + pct / 100);
+    const profitAmt = Math.round(balance - startVal);
+
+    // Generate beautifully shaped deterministic wave-based chart data points
+    const chartData: number[] = [];
+    for (let i = 0; i < numPoints; i++) {
+      const t = i / (numPoints - 1 || 1);
+      let val = startVal + t * (balance - startVal);
+
+      // Waves: combine low frequency sines and higher frequency noise
+      // using trigonometric functions of 't' and 'i' (for high frequency deterministic noise)
+      const wave1 = Math.sin(t * Math.PI * 3.5) * 0.05;
+      const wave2 = Math.cos(t * Math.PI * 8.2) * 0.02;
+      const wave3 = Math.sin(i * 2.3) * 0.012; // high-frequency noise
+
+      // Envelope guarantees that startVal is exactly at index 0 (t=0) and balance is exactly at index numPoints-1 (t=1)
+      const envelope = Math.sin(t * Math.PI);
+      const fluctuation = (wave1 + wave2 + wave3) * envelope * (balance - startVal);
+
+      val += fluctuation;
+      chartData.push(Math.round(val));
+    }
+
+    return {
+      pct,
+      label,
+      profitLabel,
+      profitAmt,
+      chartData,
+    };
+  }, [timeframe, balance, initialBalance]);
 
   return (
     <>
@@ -252,8 +383,13 @@ function HomeTab({
                 <p className="mt-2 font-display text-4xl tracking-tight tabular-nums md:text-5xl">
                   ¥{fmtY(balance)}
                 </p>
-                <p className="mt-2 inline-flex items-center gap-1 rounded-full bg-[oklch(0.78_0.16_150)]/10 px-3 py-1 text-xs text-[color:var(--success)]">
-                  <ArrowUpRight className="size-3" /> 本日の利益 +{profit}%
+                <p className={`mt-2 inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs ${
+                  timeframeData.pct >= 0 
+                    ? "bg-[oklch(0.78_0.16_150)]/10 text-[color:var(--success)]" 
+                    : "bg-[oklch(0.65_0.2_25)]/10 text-[color:var(--loss)]"
+                }`}>
+                  {timeframeData.pct >= 0 ? <ArrowUpRight className="size-3" /> : <ArrowDownRight className="size-3" />}
+                  {timeframeData.label}の利益 {timeframeData.pct >= 0 ? "+" : ""}{timeframeData.pct}% (+¥{fmtY(timeframeData.profitAmt)})
                 </p>
               </div>
               <div className="grid size-12 place-items-center rounded-2xl glass-gold">
@@ -261,7 +397,7 @@ function HomeTab({
               </div>
             </div>
             <div className="mt-6">
-              <StockChart data={liveChart} width={600} height={120} className="h-32 w-full" color="var(--gold)" />
+              <StockChart data={timeframeData.chartData} width={600} height={120} className="h-32 w-full" color="var(--gold)" />
             </div>
             <div className="mt-3 flex items-center justify-between gap-0.5">
               {timeframes.map((t) => (
@@ -280,10 +416,18 @@ function HomeTab({
         </div>
 
         <div className="grid grid-cols-2 gap-3 md:grid-cols-1">
-          <StatCard label="本日の損益"   value="+¥128,420" up />
+          <StatCard 
+            label={timeframeData.profitLabel} 
+            value={`${timeframeData.pct >= 0 ? "+" : "-"}¥${fmtY(Math.abs(timeframeData.profitAmt))}`} 
+            up={timeframeData.pct >= 0} 
+          />
           <StatCard label="保有銘柄"     value="6銘柄" />
-          <StatCard label="現金残高"     value="¥412,300" />
-          <StatCard label="月次リターン" value="+8.6%" up />
+          <StatCard label="現金残高"     value={`¥${fmtY(Math.round(balance * 0.16))}`} />
+          <StatCard 
+            label="期間リターン" 
+            value={`${timeframeData.pct >= 0 ? "+" : ""}${timeframeData.pct}%`} 
+            up={timeframeData.pct >= 0} 
+          />
         </div>
       </div>
 
