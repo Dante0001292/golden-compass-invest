@@ -94,8 +94,10 @@ export const createUser = createServerFn(
     password: string;
     balance: number;
   }): Promise<{ success: boolean; error?: string }> => {
+    console.log("[createUser] called with payload:", JSON.stringify(payload));
     try {
       const supabase = await getSupabase();
+      console.log("[createUser] supabase client ready");
       const id = `u_${Date.now()}`;
       const { error } = await supabase.from("kumo_users").insert({
         id,
@@ -105,13 +107,14 @@ export const createUser = createServerFn(
         balance: payload.balance,
       });
       if (error) {
-        console.error("Supabase insert error:", error);
+        console.error("[createUser] Supabase insert error:", JSON.stringify(error));
         return { success: false, error: error.message };
       }
+      console.log("[createUser] success");
       return { success: true };
     } catch (err: any) {
-      console.error("createUser exception:", err);
-      return { success: false, error: err.message };
+      console.error("[createUser] exception:", err?.message, err?.stack);
+      return { success: false, error: err?.message ?? String(err) };
     }
   }
 );

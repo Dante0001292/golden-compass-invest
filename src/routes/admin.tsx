@@ -157,6 +157,7 @@ function AdminPanel({ onLogout }: { onLogout: () => void }) {
       },
     });
     setSubmitting(false);
+    console.log("[admin] createUser result:", result);
     if (result.success) {
       showToast("success", `User "${form.displayName}" created successfully!`);
       setForm({ username: "", displayName: "", password: "", balance: "" });
