@@ -1,15 +1,14 @@
 import { createServerFn } from "@tanstack/react-start";
-import { createClient } from "@supabase/supabase-js";
 import type { KumoUser } from "@/config/users";
 import { ADMIN_CREDENTIALS } from "@/config/users";
 
-function getSupabase() {
+async function getSupabase() {
+  const { createClient } = await import("@supabase/supabase-js");
   const supabaseUrl = process.env.SUPABASE_URL;
   const supabaseKey = process.env.SUPABASE_ANON_KEY;
   if (!supabaseUrl || !supabaseKey) {
     throw new Error(
-      "Missing SUPABASE_URL or SUPABASE_ANON_KEY environment variables. " +
-      "Please add them in Vercel → Settings → Environment Variables."
+      "Missing SUPABASE_URL or SUPABASE_ANON_KEY. Add them in Vercel → Settings → Environment Variables."
     );
   }
   return createClient(supabaseUrl, supabaseKey);
@@ -34,7 +33,7 @@ export const verifyLogin = createServerFn(
     }
 
     try {
-      const supabase = getSupabase();
+      const supabase = await getSupabase();
       const { data, error } = await supabase
         .from("kumo_users")
         .select("*")
@@ -64,10 +63,10 @@ export const verifyLogin = createServerFn(
 );
 
 export const getAllUsers = createServerFn(
-  "GET",
+  "POST",
   async (): Promise<KumoUser[]> => {
     try {
-      const supabase = getSupabase();
+      const supabase = await getSupabase();
       const { data, error } = await supabase.from("kumo_users").select("*");
       if (error) {
         console.error("Supabase fetch error:", error);
@@ -96,7 +95,7 @@ export const createUser = createServerFn(
     balance: number;
   }): Promise<{ success: boolean; error?: string }> => {
     try {
-      const supabase = getSupabase();
+      const supabase = await getSupabase();
       const id = `u_${Date.now()}`;
       const { error } = await supabase.from("kumo_users").insert({
         id,
@@ -121,7 +120,7 @@ export const deleteUser = createServerFn(
   "POST",
   async (payload: { id: string }): Promise<{ success: boolean; error?: string }> => {
     try {
-      const supabase = getSupabase();
+      const supabase = await getSupabase();
       const { error } = await supabase.from("kumo_users").delete().eq("id", payload.id);
       if (error) return { success: false, error: error.message };
       return { success: true };

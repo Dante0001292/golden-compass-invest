@@ -125,7 +125,7 @@ function AdminPanel({ onLogout }: { onLogout: () => void }) {
     setFetchError(null);
     try {
       const fetched = await getAllUsers();
-      setUsers(fetched);
+      setUsers(Array.isArray(fetched) ? fetched : []);
     } catch (err: any) {
       console.error("fetchUsers error:", err);
       setFetchError(err?.message || "Failed to load users. Check your Supabase environment variables in Vercel.");
