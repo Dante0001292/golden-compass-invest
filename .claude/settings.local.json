@@ -9,7 +9,9 @@
       "Bash(git push *)",
       "Bash(git config *)",
       "Bash(node -e \"const p = require\\('./node_modules/@tanstack/react-start/package.json'\\); console.log\\(p.version\\)\")",
-      "Bash(node -e \"const t = require\\('./node_modules/@tanstack/react-start'\\); console.log\\(Object.keys\\(t\\).filter\\(k => k.includes\\('Server'\\) || k.includes\\('server'\\)\\)\\)\")"
+      "Bash(node -e \"const t = require\\('./node_modules/@tanstack/react-start'\\); console.log\\(Object.keys\\(t\\).filter\\(k => k.includes\\('Server'\\) || k.includes\\('server'\\)\\)\\)\")",
+      "Bash(node -e \"try { const m = require\\('./node_modules/@tanstack/react-start/dist/esm/server.d.ts'\\); console.log\\(Object.keys\\(m\\)\\) } catch\\(e\\) { console.log\\(e.message\\) }\")",
+      "Bash(node -e \"const p = require\\('./node_modules/@tanstack/react-start/package.json'\\); console.log\\(JSON.stringify\\(Object.keys\\(p.exports || {}\\), null, 2\\)\\)\")"
     ]
   }
 }
