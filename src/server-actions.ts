@@ -141,13 +141,16 @@ export const deleteUser = createServerFn()
   });
 
 export const updateUser = createServerFn()
-  .inputValidator((data: { id: string; balance: number }) => data)
+  .inputValidator((data: { id: string; balance?: number; password?: string }) => data)
   .handler(async ({ data }): Promise<{ success: boolean; error?: string }> => {
     try {
       const supabase = await getSupabase();
+      const patch: Record<string, unknown> = {};
+      if (data.balance !== undefined) patch.balance = data.balance;
+      if (data.password !== undefined) patch.password = data.password;
       const { error } = await supabase
         .from("kumo_users")
-        .update({ balance: data.balance })
+        .update(patch)
         .eq("id", data.id);
       if (error) {
         console.error("[updateUser] Supabase update error:", JSON.stringify(error));

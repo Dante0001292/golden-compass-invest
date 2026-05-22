@@ -266,6 +266,7 @@ function HomeTab({
   saltBalance: number;
 }) {
   const [animatedSaltBalance, setAnimatedSaltBalance] = useState(saltBalance);
+  const [saltModalOpen, setSaltModalOpen] = useState(false);
 
   useEffect(() => {
     setAnimatedSaltBalance(saltBalance);
@@ -471,7 +472,10 @@ function HomeTab({
       </section>
 
       <section className="mt-10 mb-6">
-        <div className="relative overflow-hidden rounded-[2rem] glass p-6 md:p-8 transition hover:border-gold/30 hover:shadow-gold">
+        <button
+          onClick={() => setSaltModalOpen(true)}
+          className="w-full text-left relative overflow-hidden rounded-[2rem] glass p-6 md:p-8 transition hover:border-gold/30 hover:shadow-gold cursor-pointer"
+        >
           <div className="absolute -right-20 -top-20 size-64 rounded-full bg-gold/10 blur-3xl" />
           <div className="absolute -bottom-20 -left-20 size-64 rounded-full bg-[oklch(0.78_0.16_150)]/5 blur-3xl" />
           <div className="relative flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -487,12 +491,88 @@ function HomeTab({
                 <ArrowUpRight className="size-3" /> 継続成長中
               </p>
             </div>
-            <div className="hidden md:grid size-16 place-items-center rounded-3xl glass-gold shrink-0">
-              <TrendingUp className="size-7 text-gold" />
+            <div className="flex items-center gap-3 md:flex-col md:items-end">
+              <div className="hidden md:grid size-16 place-items-center rounded-3xl glass-gold shrink-0">
+                <TrendingUp className="size-7 text-gold" />
+              </div>
+              <span className="inline-flex items-center gap-1 rounded-full glass-gold px-3 py-1.5 text-[11px] text-gold">
+                <ChevronRight className="size-3" /> 詳細を見る
+              </span>
             </div>
           </div>
-        </div>
+        </button>
       </section>
+
+      {/* Salt-San holdings modal */}
+      {saltModalOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4"
+          onClick={() => setSaltModalOpen(false)}
+        >
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+          <div
+            className="relative z-10 w-full max-w-2xl max-h-[85vh] overflow-y-auto rounded-3xl glass-gold p-6"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="mb-5 flex items-start justify-between">
+              <div>
+                <p className="text-xs uppercase tracking-[0.3em] text-gold">Salt-San ポートフォリオ</p>
+                <h2 className="mt-1 font-display text-2xl tracking-tight">投資銘柄一覧</h2>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  総評価額 ¥{fmtY(animatedSaltBalance)}
+                </p>
+              </div>
+              <button
+                onClick={() => setSaltModalOpen(false)}
+                className="grid size-9 place-items-center rounded-full glass text-muted-foreground transition hover:text-foreground"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="space-y-3">
+              {holdings.map((h) => (
+                <div
+                  key={h.sym}
+                  className="flex items-center gap-4 rounded-2xl glass p-4 transition hover:border-gold/20"
+                >
+                  <div className="grid size-11 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-neutral-900 to-black text-sm font-semibold text-gold ring-1 ring-[color:var(--gold)]/30">
+                    {h.sym.slice(0, 2)}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <p className="font-display text-sm">{h.sym}</p>
+                      <p className="text-xs text-muted-foreground">{h.jp}</p>
+                    </div>
+                    <div className="mt-1">
+                      <StockChart
+                        data={h.data}
+                        width={160}
+                        height={28}
+                        className="h-7 w-40"
+                        color={h.up ? "var(--gold)" : "var(--loss)"}
+                        fill={false}
+                        animate={false}
+                      />
+                    </div>
+                  </div>
+                  <div className="text-right shrink-0">
+                    <p className="font-display text-base tabular-nums">{h.price}</p>
+                    <p className={`text-xs ${h.up ? "text-[color:var(--success)]" : "text-[color:var(--loss)]"}`}>
+                      {h.change}
+                    </p>
+                    <p className="mt-0.5 text-[10px] text-muted-foreground">{h.shares}株</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <p className="mt-5 text-center text-[10px] text-muted-foreground">
+              Salt-San の運用するポートフォリオ · リアルタイム更新中
+            </p>
+          </div>
+        </div>
+      )}
     </>
   );
 }
