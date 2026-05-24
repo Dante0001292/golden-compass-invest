@@ -163,6 +163,29 @@ export const updateUser = createServerFn()
     }
   });
 
+export const getUserById = createServerFn()
+  .inputValidator((data: { id: string }) => data)
+  .handler(async ({ data }): Promise<KumoUser | null> => {
+    try {
+      const supabase = await getSupabase();
+      const { data: row, error } = await supabase
+        .from("kumo_users")
+        .select("*")
+        .eq("id", data.id)
+        .maybeSingle();
+      if (error || !row) return null;
+      return {
+        id: row.id,
+        username: row.username,
+        displayName: row.display_name,
+        password: row.password,
+        balance: row.balance,
+      };
+    } catch {
+      return null;
+    }
+  });
+
 export const getSiteSetting = createServerFn()
   .inputValidator((data: { key: string }) => data)
   .handler(async ({ data }): Promise<{ value: any | null }> => {

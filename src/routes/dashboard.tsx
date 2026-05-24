@@ -19,7 +19,7 @@ import { Particles } from "@/components/landing/Particles";
 import { StockChart } from "@/components/landing/StockChart";
 import { Ticker } from "@/components/landing/Ticker";
 import { getCurrentUser, logout } from "@/lib/auth";
-import { getSiteSetting, updateUser } from "@/server-actions";
+import { getSiteSetting, updateUser, getUserById } from "@/server-actions";
 import type { KumoUser } from "@/config/users";
 
 
@@ -111,6 +111,29 @@ function Dashboard() {
     setBalance(u.balance);
     setInitialBalance(u.balance);
     fetchSiteSaltBalance();
+
+    // Fetch fresh balance from DB so admin edits are reflected immediately
+    if (u.id !== "admin") {
+      getUserById({ data: { id: u.id } }).then((fresh) => {
+        if (fresh) {
+          setBalance(fresh.balance);
+          setInitialBalance(fresh.balance);
+          // Keep localStorage in sync with the authoritative DB value
+          try {
+            const session = localStorage.getItem("kumo_session");
+            if (session) {
+              const parsed = JSON.parse(session);
+              parsed.balance = fresh.balance;
+              localStorage.setItem("kumo_session", JSON.stringify(parsed));
+            }
+          } catch (e) {
+            console.error("localStorage sync error:", e);
+          }
+        }
+      }).catch((err) => {
+        console.error("Failed to fetch fresh balance:", err);
+      });
+    }
   }, [navigate]);
 
   async function fetchSiteSaltBalance() {
